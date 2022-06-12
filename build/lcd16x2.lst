@@ -1,0 +1,513 @@
+ARM GAS  /tmp/cc1iz3gh.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 1
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"lcd16x2.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.section	.text.send_to_lcd,"ax",%progbits
+  18              		.align	1
+  19              		.global	send_to_lcd
+  20              		.arch armv7e-m
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  24              		.fpu fpv4-sp-d16
+  26              	send_to_lcd:
+  27              	.LVL0:
+  28              	.LFB130:
+  29              		.file 1 "Core/Src/lcd16x2.c"
+   1:Core/Src/lcd16x2.c **** #include "lcd16x2.h"
+   2:Core/Src/lcd16x2.c **** //extern unsigned char f_timer_100us =0;
+   3:Core/Src/lcd16x2.c **** 
+   4:Core/Src/lcd16x2.c **** void send_to_lcd(char data)
+   5:Core/Src/lcd16x2.c **** {
+  30              		.loc 1 5 1 view -0
+  31              		.cfi_startproc
+  32              		@ args = 0, pretend = 0, frame = 0
+  33              		@ frame_needed = 0, uses_anonymous_args = 0
+  34              		.loc 1 5 1 is_stmt 0 view .LVU1
+  35 0000 10B5     		push	{r4, lr}
+  36              	.LCFI0:
+  37              		.cfi_def_cfa_offset 8
+  38              		.cfi_offset 4, -8
+  39              		.cfi_offset 14, -4
+   6:Core/Src/lcd16x2.c **** 
+   7:Core/Src/lcd16x2.c **** 	//writing data to pin PE0~PE3
+   8:Core/Src/lcd16x2.c **** 	GPIOE->ODR =  (GPIOE->ODR & 0xFFFFFFF0) | data;
+  40              		.loc 1 8 2 is_stmt 1 view .LVU2
+  41              		.loc 1 8 22 is_stmt 0 view .LVU3
+  42 0002 0B4C     		ldr	r4, .L3
+  43 0004 6369     		ldr	r3, [r4, #20]
+  44              		.loc 1 8 28 view .LVU4
+  45 0006 23F00F03 		bic	r3, r3, #15
+  46              		.loc 1 8 42 view .LVU5
+  47 000a 1843     		orrs	r0, r0, r3
+  48              	.LVL1:
+  49              		.loc 1 8 13 view .LVU6
+  50 000c 6061     		str	r0, [r4, #20]
+ARM GAS  /tmp/cc1iz3gh.s 			page 2
+
+
+   9:Core/Src/lcd16x2.c **** 
+  10:Core/Src/lcd16x2.c **** /*
+  11:Core/Src/lcd16x2.c **** 	HAL_GPIO_WritePin(D7_GPIO_Port, D7_Pin, ((data>>3)&0x01));
+  12:Core/Src/lcd16x2.c **** 	HAL_GPIO_WritePin(D6_GPIO_Port, D6_Pin, ((data>>2)&0x01));
+  13:Core/Src/lcd16x2.c **** 	HAL_GPIO_WritePin(D5_GPIO_Port, D5_Pin, ((data>>1)&0x01));
+  14:Core/Src/lcd16x2.c **** 	HAL_GPIO_WritePin(D4_GPIO_Port, D4_Pin, ((data>>0)&0x01));
+  15:Core/Src/lcd16x2.c **** */
+  16:Core/Src/lcd16x2.c **** 
+  17:Core/Src/lcd16x2.c **** 	HAL_GPIO_WritePin(EN_GPIO_Port, EN_Pin, 1);
+  51              		.loc 1 17 2 is_stmt 1 view .LVU7
+  52 000e 0122     		movs	r2, #1
+  53 0010 2021     		movs	r1, #32
+  54 0012 2046     		mov	r0, r4
+  55 0014 FFF7FEFF 		bl	HAL_GPIO_WritePin
+  56              	.LVL2:
+  18:Core/Src/lcd16x2.c **** 	HAL_Delay(1);
+  57              		.loc 1 18 2 view .LVU8
+  58 0018 0120     		movs	r0, #1
+  59 001a FFF7FEFF 		bl	HAL_Delay
+  60              	.LVL3:
+  19:Core/Src/lcd16x2.c ****     HAL_GPIO_WritePin(EN_GPIO_Port, EN_Pin, 0);
+  61              		.loc 1 19 5 view .LVU9
+  62 001e 0022     		movs	r2, #0
+  63 0020 2021     		movs	r1, #32
+  64 0022 2046     		mov	r0, r4
+  65 0024 FFF7FEFF 		bl	HAL_GPIO_WritePin
+  66              	.LVL4:
+  20:Core/Src/lcd16x2.c ****     HAL_Delay(1);
+  67              		.loc 1 20 5 view .LVU10
+  68 0028 0120     		movs	r0, #1
+  69 002a FFF7FEFF 		bl	HAL_Delay
+  70              	.LVL5:
+  21:Core/Src/lcd16x2.c **** }
+  71              		.loc 1 21 1 is_stmt 0 view .LVU11
+  72 002e 10BD     		pop	{r4, pc}
+  73              	.L4:
+  74              		.align	2
+  75              	.L3:
+  76 0030 00100240 		.word	1073876992
+  77              		.cfi_endproc
+  78              	.LFE130:
+  80              		.section	.text.lcd_cmd,"ax",%progbits
+  81              		.align	1
+  82              		.global	lcd_cmd
+  83              		.syntax unified
+  84              		.thumb
+  85              		.thumb_func
+  86              		.fpu fpv4-sp-d16
+  88              	lcd_cmd:
+  89              	.LVL6:
+  90              	.LFB131:
+  22:Core/Src/lcd16x2.c **** 
+  23:Core/Src/lcd16x2.c **** 
+  24:Core/Src/lcd16x2.c **** 
+  25:Core/Src/lcd16x2.c **** void lcd_cmd(char cmd)
+  26:Core/Src/lcd16x2.c **** {
+  91              		.loc 1 26 1 is_stmt 1 view -0
+ARM GAS  /tmp/cc1iz3gh.s 			page 3
+
+
+  92              		.cfi_startproc
+  93              		@ args = 0, pretend = 0, frame = 0
+  94              		@ frame_needed = 0, uses_anonymous_args = 0
+  95              		.loc 1 26 1 is_stmt 0 view .LVU13
+  96 0000 10B5     		push	{r4, lr}
+  97              	.LCFI1:
+  98              		.cfi_def_cfa_offset 8
+  99              		.cfi_offset 4, -8
+ 100              		.cfi_offset 14, -4
+ 101 0002 0446     		mov	r4, r0
+  27:Core/Src/lcd16x2.c **** 	HAL_GPIO_WritePin(RS_GPIO_Port, RS_Pin, 0);
+ 102              		.loc 1 27 2 is_stmt 1 view .LVU14
+ 103 0004 0022     		movs	r2, #0
+ 104 0006 1021     		movs	r1, #16
+ 105 0008 0548     		ldr	r0, .L7
+ 106              	.LVL7:
+ 107              		.loc 1 27 2 is_stmt 0 view .LVU15
+ 108 000a FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 109              	.LVL8:
+  28:Core/Src/lcd16x2.c **** 
+  29:Core/Src/lcd16x2.c **** 	send_to_lcd((cmd>>4)&0x0f);
+ 110              		.loc 1 29 2 is_stmt 1 view .LVU16
+ 111 000e 2009     		lsrs	r0, r4, #4
+ 112 0010 FFF7FEFF 		bl	send_to_lcd
+ 113              	.LVL9:
+  30:Core/Src/lcd16x2.c **** 	send_to_lcd(cmd&0x0f);
+ 114              		.loc 1 30 2 view .LVU17
+ 115 0014 04F00F00 		and	r0, r4, #15
+ 116 0018 FFF7FEFF 		bl	send_to_lcd
+ 117              	.LVL10:
+  31:Core/Src/lcd16x2.c **** 
+  32:Core/Src/lcd16x2.c **** }
+ 118              		.loc 1 32 1 is_stmt 0 view .LVU18
+ 119 001c 10BD     		pop	{r4, pc}
+ 120              	.L8:
+ 121 001e 00BF     		.align	2
+ 122              	.L7:
+ 123 0020 00100240 		.word	1073876992
+ 124              		.cfi_endproc
+ 125              	.LFE131:
+ 127              		.section	.text.lcd_data,"ax",%progbits
+ 128              		.align	1
+ 129              		.global	lcd_data
+ 130              		.syntax unified
+ 131              		.thumb
+ 132              		.thumb_func
+ 133              		.fpu fpv4-sp-d16
+ 135              	lcd_data:
+ 136              	.LVL11:
+ 137              	.LFB132:
+  33:Core/Src/lcd16x2.c **** 
+  34:Core/Src/lcd16x2.c **** void lcd_data(char data)
+  35:Core/Src/lcd16x2.c **** {
+ 138              		.loc 1 35 1 is_stmt 1 view -0
+ 139              		.cfi_startproc
+ 140              		@ args = 0, pretend = 0, frame = 0
+ 141              		@ frame_needed = 0, uses_anonymous_args = 0
+ARM GAS  /tmp/cc1iz3gh.s 			page 4
+
+
+ 142              		.loc 1 35 1 is_stmt 0 view .LVU20
+ 143 0000 10B5     		push	{r4, lr}
+ 144              	.LCFI2:
+ 145              		.cfi_def_cfa_offset 8
+ 146              		.cfi_offset 4, -8
+ 147              		.cfi_offset 14, -4
+ 148 0002 0446     		mov	r4, r0
+  36:Core/Src/lcd16x2.c **** 	HAL_GPIO_WritePin(RS_GPIO_Port, RS_Pin, 1);
+ 149              		.loc 1 36 2 is_stmt 1 view .LVU21
+ 150 0004 0122     		movs	r2, #1
+ 151 0006 1021     		movs	r1, #16
+ 152 0008 0548     		ldr	r0, .L11
+ 153              	.LVL12:
+ 154              		.loc 1 36 2 is_stmt 0 view .LVU22
+ 155 000a FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 156              	.LVL13:
+  37:Core/Src/lcd16x2.c **** 
+  38:Core/Src/lcd16x2.c **** 	send_to_lcd((data>>4)&0x0f);
+ 157              		.loc 1 38 2 is_stmt 1 view .LVU23
+ 158 000e 2009     		lsrs	r0, r4, #4
+ 159 0010 FFF7FEFF 		bl	send_to_lcd
+ 160              	.LVL14:
+  39:Core/Src/lcd16x2.c **** 	send_to_lcd(data&0x0f);
+ 161              		.loc 1 39 2 view .LVU24
+ 162 0014 04F00F00 		and	r0, r4, #15
+ 163 0018 FFF7FEFF 		bl	send_to_lcd
+ 164              	.LVL15:
+  40:Core/Src/lcd16x2.c **** }
+ 165              		.loc 1 40 1 is_stmt 0 view .LVU25
+ 166 001c 10BD     		pop	{r4, pc}
+ 167              	.L12:
+ 168 001e 00BF     		.align	2
+ 169              	.L11:
+ 170 0020 00100240 		.word	1073876992
+ 171              		.cfi_endproc
+ 172              	.LFE132:
+ 174              		.section	.text.lcd_write_string,"ax",%progbits
+ 175              		.align	1
+ 176              		.global	lcd_write_string
+ 177              		.syntax unified
+ 178              		.thumb
+ 179              		.thumb_func
+ 180              		.fpu fpv4-sp-d16
+ 182              	lcd_write_string:
+ 183              	.LVL16:
+ 184              	.LFB133:
+  41:Core/Src/lcd16x2.c **** 
+  42:Core/Src/lcd16x2.c **** void lcd_write_string(char *s)
+  43:Core/Src/lcd16x2.c **** {
+ 185              		.loc 1 43 1 is_stmt 1 view -0
+ 186              		.cfi_startproc
+ 187              		@ args = 0, pretend = 0, frame = 0
+ 188              		@ frame_needed = 0, uses_anonymous_args = 0
+ 189              		.loc 1 43 1 is_stmt 0 view .LVU27
+ 190 0000 38B5     		push	{r3, r4, r5, lr}
+ 191              	.LCFI3:
+ 192              		.cfi_def_cfa_offset 16
+ARM GAS  /tmp/cc1iz3gh.s 			page 5
+
+
+ 193              		.cfi_offset 3, -16
+ 194              		.cfi_offset 4, -12
+ 195              		.cfi_offset 5, -8
+ 196              		.cfi_offset 14, -4
+ 197 0002 0546     		mov	r5, r0
+  44:Core/Src/lcd16x2.c **** 	for(int i=0;s[i]!=0;i++) lcd_data(s[i]);
+ 198              		.loc 1 44 2 is_stmt 1 view .LVU28
+ 199              	.LBB2:
+ 200              		.loc 1 44 6 view .LVU29
+ 201              	.LVL17:
+ 202              		.loc 1 44 10 is_stmt 0 view .LVU30
+ 203 0004 0024     		movs	r4, #0
+ 204              		.loc 1 44 2 view .LVU31
+ 205 0006 02E0     		b	.L14
+ 206              	.LVL18:
+ 207              	.L15:
+ 208              		.loc 1 44 27 is_stmt 1 discriminator 3 view .LVU32
+ 209 0008 FFF7FEFF 		bl	lcd_data
+ 210              	.LVL19:
+ 211              		.loc 1 44 22 discriminator 3 view .LVU33
+ 212              		.loc 1 44 23 is_stmt 0 discriminator 3 view .LVU34
+ 213 000c 0134     		adds	r4, r4, #1
+ 214              	.LVL20:
+ 215              	.L14:
+ 216              		.loc 1 44 14 is_stmt 1 discriminator 1 view .LVU35
+ 217              		.loc 1 44 15 is_stmt 0 discriminator 1 view .LVU36
+ 218 000e 285D     		ldrb	r0, [r5, r4]	@ zero_extendqisi2
+ 219              		.loc 1 44 2 discriminator 1 view .LVU37
+ 220 0010 0028     		cmp	r0, #0
+ 221 0012 F9D1     		bne	.L15
+ 222              	.LBE2:
+  45:Core/Src/lcd16x2.c **** 
+  46:Core/Src/lcd16x2.c **** }
+ 223              		.loc 1 46 1 view .LVU38
+ 224 0014 38BD     		pop	{r3, r4, r5, pc}
+ 225              		.loc 1 46 1 view .LVU39
+ 226              		.cfi_endproc
+ 227              	.LFE133:
+ 229              		.section	.text.lcd_init,"ax",%progbits
+ 230              		.align	1
+ 231              		.global	lcd_init
+ 232              		.syntax unified
+ 233              		.thumb
+ 234              		.thumb_func
+ 235              		.fpu fpv4-sp-d16
+ 237              	lcd_init:
+ 238              	.LFB134:
+  47:Core/Src/lcd16x2.c **** 
+  48:Core/Src/lcd16x2.c **** void lcd_init(void)
+  49:Core/Src/lcd16x2.c **** {
+ 239              		.loc 1 49 1 is_stmt 1 view -0
+ 240              		.cfi_startproc
+ 241              		@ args = 0, pretend = 0, frame = 0
+ 242              		@ frame_needed = 0, uses_anonymous_args = 0
+ 243 0000 08B5     		push	{r3, lr}
+ 244              	.LCFI4:
+ 245              		.cfi_def_cfa_offset 8
+ARM GAS  /tmp/cc1iz3gh.s 			page 6
+
+
+ 246              		.cfi_offset 3, -8
+ 247              		.cfi_offset 14, -4
+  50:Core/Src/lcd16x2.c ****     // 4 bit initialization
+  51:Core/Src/lcd16x2.c ****   HAL_Delay(50);  // wait for >40ms
+ 248              		.loc 1 51 3 view .LVU41
+ 249 0002 3220     		movs	r0, #50
+ 250 0004 FFF7FEFF 		bl	HAL_Delay
+ 251              	.LVL21:
+  52:Core/Src/lcd16x2.c ****  /*lcd_cmd (0x30);
+  53:Core/Src/lcd16x2.c ****   HAL_Delay(5);  // wait for >4.1ms
+  54:Core/Src/lcd16x2.c ****   lcd_cmd (0x30);
+  55:Core/Src/lcd16x2.c ****   HAL_Delay(1);  // wait for >100us
+  56:Core/Src/lcd16x2.c ****   lcd_cmd (0x30);
+  57:Core/Src/lcd16x2.c ****   HAL_Delay(1);
+  58:Core/Src/lcd16x2.c ****   lcd_cmd (0x20);  // 4bit mode
+  59:Core/Src/lcd16x2.c ****   HAL_Delay(1);
+  60:Core/Src/lcd16x2.c **** */
+  61:Core/Src/lcd16x2.c **** // dislay initialization
+  62:Core/Src/lcd16x2.c ****   lcd_cmd (0x2);
+ 252              		.loc 1 62 3 view .LVU42
+ 253 0008 0220     		movs	r0, #2
+ 254 000a FFF7FEFF 		bl	lcd_cmd
+ 255              	.LVL22:
+  63:Core/Src/lcd16x2.c ****   lcd_cmd (0x28); // Function set --> DL=0 (4 bit mode), N = 1 (2 line display) F = 0 (5x8 characte
+ 256              		.loc 1 63 3 view .LVU43
+ 257 000e 2820     		movs	r0, #40
+ 258 0010 FFF7FEFF 		bl	lcd_cmd
+ 259              	.LVL23:
+  64:Core/Src/lcd16x2.c ****   HAL_Delay(1);
+ 260              		.loc 1 64 3 view .LVU44
+ 261 0014 0120     		movs	r0, #1
+ 262 0016 FFF7FEFF 		bl	HAL_Delay
+ 263              	.LVL24:
+  65:Core/Src/lcd16x2.c ****   lcd_cmd (0x08); //Display on/off control --> D=0,C=0, B=0  ---> display off
+ 264              		.loc 1 65 3 view .LVU45
+ 265 001a 0820     		movs	r0, #8
+ 266 001c FFF7FEFF 		bl	lcd_cmd
+ 267              	.LVL25:
+  66:Core/Src/lcd16x2.c ****   HAL_Delay(1);
+ 268              		.loc 1 66 3 view .LVU46
+ 269 0020 0120     		movs	r0, #1
+ 270 0022 FFF7FEFF 		bl	HAL_Delay
+ 271              	.LVL26:
+  67:Core/Src/lcd16x2.c ****   lcd_cmd (0x01);  // clear display
+ 272              		.loc 1 67 3 view .LVU47
+ 273 0026 0120     		movs	r0, #1
+ 274 0028 FFF7FEFF 		bl	lcd_cmd
+ 275              	.LVL27:
+  68:Core/Src/lcd16x2.c ****   HAL_Delay(1);
+ 276              		.loc 1 68 3 view .LVU48
+ 277 002c 0120     		movs	r0, #1
+ 278 002e FFF7FEFF 		bl	HAL_Delay
+ 279              	.LVL28:
+  69:Core/Src/lcd16x2.c ****   lcd_cmd (0x06); //Entry mode set --> I/D = 1 (increment cursor) & S = 0 (no shift)
+ 280              		.loc 1 69 3 view .LVU49
+ 281 0032 0620     		movs	r0, #6
+ 282 0034 FFF7FEFF 		bl	lcd_cmd
+ARM GAS  /tmp/cc1iz3gh.s 			page 7
+
+
+ 283              	.LVL29:
+  70:Core/Src/lcd16x2.c ****   HAL_Delay(1);
+ 284              		.loc 1 70 3 view .LVU50
+ 285 0038 0120     		movs	r0, #1
+ 286 003a FFF7FEFF 		bl	HAL_Delay
+ 287              	.LVL30:
+  71:Core/Src/lcd16x2.c ****   lcd_cmd (0x0C); //Display on/off control --> D = 1, C and B = 0. (Cursor and blink, last two bits
+ 288              		.loc 1 71 3 view .LVU51
+ 289 003e 0C20     		movs	r0, #12
+ 290 0040 FFF7FEFF 		bl	lcd_cmd
+ 291              	.LVL31:
+  72:Core/Src/lcd16x2.c **** }
+ 292              		.loc 1 72 1 is_stmt 0 view .LVU52
+ 293 0044 08BD     		pop	{r3, pc}
+ 294              		.cfi_endproc
+ 295              	.LFE134:
+ 297              		.section	.text.lcd_set_pos,"ax",%progbits
+ 298              		.align	1
+ 299              		.global	lcd_set_pos
+ 300              		.syntax unified
+ 301              		.thumb
+ 302              		.thumb_func
+ 303              		.fpu fpv4-sp-d16
+ 305              	lcd_set_pos:
+ 306              	.LVL32:
+ 307              	.LFB135:
+  73:Core/Src/lcd16x2.c **** 
+  74:Core/Src/lcd16x2.c **** void lcd_set_pos(int row, int col)
+  75:Core/Src/lcd16x2.c **** {
+ 308              		.loc 1 75 1 is_stmt 1 view -0
+ 309              		.cfi_startproc
+ 310              		@ args = 0, pretend = 0, frame = 0
+ 311              		@ frame_needed = 0, uses_anonymous_args = 0
+ 312              		.loc 1 75 1 is_stmt 0 view .LVU54
+ 313 0000 08B5     		push	{r3, lr}
+ 314              	.LCFI5:
+ 315              		.cfi_def_cfa_offset 8
+ 316              		.cfi_offset 3, -8
+ 317              		.cfi_offset 14, -4
+  76:Core/Src/lcd16x2.c **** 
+  77:Core/Src/lcd16x2.c **** 	if (row==0)
+ 318              		.loc 1 77 2 is_stmt 1 view .LVU55
+ 319              		.loc 1 77 5 is_stmt 0 view .LVU56
+ 320 0002 28B9     		cbnz	r0, .L20
+  78:Core/Src/lcd16x2.c **** 	{
+  79:Core/Src/lcd16x2.c **** 		col |= 0x80;
+ 321              		.loc 1 79 3 is_stmt 1 view .LVU57
+ 322              		.loc 1 79 7 is_stmt 0 view .LVU58
+ 323 0004 41F08000 		orr	r0, r1, #128
+ 324              	.LVL33:
+ 325              	.L21:
+  80:Core/Src/lcd16x2.c **** 	}
+  81:Core/Src/lcd16x2.c **** 	else
+  82:Core/Src/lcd16x2.c **** 	{
+  83:Core/Src/lcd16x2.c **** 		col |= 0xC0;
+  84:Core/Src/lcd16x2.c **** 	}
+  85:Core/Src/lcd16x2.c **** 
+ARM GAS  /tmp/cc1iz3gh.s 			page 8
+
+
+  86:Core/Src/lcd16x2.c **** 	lcd_cmd(col);
+ 326              		.loc 1 86 2 is_stmt 1 view .LVU59
+ 327 0008 C0B2     		uxtb	r0, r0
+ 328              	.LVL34:
+ 329              		.loc 1 86 2 is_stmt 0 view .LVU60
+ 330 000a FFF7FEFF 		bl	lcd_cmd
+ 331              	.LVL35:
+  87:Core/Src/lcd16x2.c **** 
+  88:Core/Src/lcd16x2.c **** }
+ 332              		.loc 1 88 1 view .LVU61
+ 333 000e 08BD     		pop	{r3, pc}
+ 334              	.LVL36:
+ 335              	.L20:
+  83:Core/Src/lcd16x2.c **** 	}
+ 336              		.loc 1 83 3 is_stmt 1 view .LVU62
+  83:Core/Src/lcd16x2.c **** 	}
+ 337              		.loc 1 83 7 is_stmt 0 view .LVU63
+ 338 0010 41F0C000 		orr	r0, r1, #192
+ 339              	.LVL37:
+  83:Core/Src/lcd16x2.c **** 	}
+ 340              		.loc 1 83 7 view .LVU64
+ 341 0014 F8E7     		b	.L21
+ 342              		.cfi_endproc
+ 343              	.LFE135:
+ 345              		.section	.text.lcd_clear,"ax",%progbits
+ 346              		.align	1
+ 347              		.global	lcd_clear
+ 348              		.syntax unified
+ 349              		.thumb
+ 350              		.thumb_func
+ 351              		.fpu fpv4-sp-d16
+ 353              	lcd_clear:
+ 354              	.LFB136:
+  89:Core/Src/lcd16x2.c **** 
+  90:Core/Src/lcd16x2.c **** void lcd_clear(void)
+  91:Core/Src/lcd16x2.c **** {
+ 355              		.loc 1 91 1 is_stmt 1 view -0
+ 356              		.cfi_startproc
+ 357              		@ args = 0, pretend = 0, frame = 0
+ 358              		@ frame_needed = 0, uses_anonymous_args = 0
+ 359 0000 08B5     		push	{r3, lr}
+ 360              	.LCFI6:
+ 361              		.cfi_def_cfa_offset 8
+ 362              		.cfi_offset 3, -8
+ 363              		.cfi_offset 14, -4
+  92:Core/Src/lcd16x2.c **** 	 lcd_cmd(0x01);
+ 364              		.loc 1 92 3 view .LVU66
+ 365 0002 0120     		movs	r0, #1
+ 366 0004 FFF7FEFF 		bl	lcd_cmd
+ 367              	.LVL38:
+  93:Core/Src/lcd16x2.c **** }
+ 368              		.loc 1 93 1 is_stmt 0 view .LVU67
+ 369 0008 08BD     		pop	{r3, pc}
+ 370              		.cfi_endproc
+ 371              	.LFE136:
+ 373              		.text
+ 374              	.Letext0:
+ARM GAS  /tmp/cc1iz3gh.s 			page 9
+
+
+ 375              		.file 2 "/usr/lib/gcc/arm-none-eabi/10.3.1/include/stdint.h"
+ 376              		.file 3 "Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f429xx.h"
+ 377              		.file 4 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h"
+ 378              		.file 5 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_gpio.h"
+ARM GAS  /tmp/cc1iz3gh.s 			page 10
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 lcd16x2.c
+     /tmp/cc1iz3gh.s:18     .text.send_to_lcd:0000000000000000 $t
+     /tmp/cc1iz3gh.s:26     .text.send_to_lcd:0000000000000000 send_to_lcd
+     /tmp/cc1iz3gh.s:76     .text.send_to_lcd:0000000000000030 $d
+     /tmp/cc1iz3gh.s:81     .text.lcd_cmd:0000000000000000 $t
+     /tmp/cc1iz3gh.s:88     .text.lcd_cmd:0000000000000000 lcd_cmd
+     /tmp/cc1iz3gh.s:123    .text.lcd_cmd:0000000000000020 $d
+     /tmp/cc1iz3gh.s:128    .text.lcd_data:0000000000000000 $t
+     /tmp/cc1iz3gh.s:135    .text.lcd_data:0000000000000000 lcd_data
+     /tmp/cc1iz3gh.s:170    .text.lcd_data:0000000000000020 $d
+     /tmp/cc1iz3gh.s:175    .text.lcd_write_string:0000000000000000 $t
+     /tmp/cc1iz3gh.s:182    .text.lcd_write_string:0000000000000000 lcd_write_string
+     /tmp/cc1iz3gh.s:230    .text.lcd_init:0000000000000000 $t
+     /tmp/cc1iz3gh.s:237    .text.lcd_init:0000000000000000 lcd_init
+     /tmp/cc1iz3gh.s:298    .text.lcd_set_pos:0000000000000000 $t
+     /tmp/cc1iz3gh.s:305    .text.lcd_set_pos:0000000000000000 lcd_set_pos
+     /tmp/cc1iz3gh.s:346    .text.lcd_clear:0000000000000000 $t
+     /tmp/cc1iz3gh.s:353    .text.lcd_clear:0000000000000000 lcd_clear
+
+UNDEFINED SYMBOLS
+HAL_GPIO_WritePin
+HAL_Delay
