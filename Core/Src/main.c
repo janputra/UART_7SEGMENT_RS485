@@ -127,10 +127,10 @@ void seven_segment_driver(char input,char select_digit);
 void TX1_delay_update(void);
 void TX2_delay_update(void);
 void m_send_to_lcd(char data);
-void Set_Trasnmitter_TX1(void);
-void Set_Trasnmitter_TX2(void);
-void Set_Receiver_TX1(void);
-void Set_Receiver_TX2(void);
+void Set_Transmitter_Port1(void);
+void Set_Transmitter_Port2(void);
+void Set_Receiver_Port1(void);
+void Set_Receiver_Port2(void);
 /*
 unsigned char m_send_to_lcd(char data);
 unsigned char m_lcd_cmd(char cmd);
@@ -186,8 +186,8 @@ int main(void)
   rx2_wp=0;
 
   	
-  Set_Receiver_TX1();
-  Set_Receiver_TX2();
+  Set_Receiver_Port1();
+  Set_Receiver_Port2();
 
   HAL_UART_Receive_IT(&huart4, &rx_buffer1[rx1_wp], 1);
   HAL_UART_Receive_IT(&huart5, &rx_buffer2[rx2_wp], 1);
@@ -531,14 +531,14 @@ void main_task(void)
 					case EVENT_KEY1_PRESSED:
 						TX1_delay_val=250;
 						d_timer_TX1=250;
-						Set_Trasnmitter_TX1();
+						Set_Transmitter_Port1();
 						state = STATE_TX1;
 												
 						break;
 					case EVENT_KEY2_PRESSED:
 						TX2_delay_val=250;
 						d_timer_TX2=250;
-						Set_Trasnmitter_TX2();
+						Set_Transmitter_Port2();
 						state = STATE_TX2;
 						
 						break;
@@ -563,7 +563,7 @@ void main_task(void)
 					break;*/
 
 				case EVENT_KEY1_RELEASED:
-					Set_Receiver_TX1();
+					Set_Receiver_Port1();
 					state = STATE_IDLE;
 
 
@@ -590,7 +590,7 @@ void main_task(void)
 						break;
 						*/
 					case EVENT_KEY2_RELEASED:
-						Set_Receiver_TX2();
+						Set_Receiver_Port2();
 						state = STATE_IDLE;
 
 						break;
@@ -641,25 +641,25 @@ void TX2_delay_update(void){
 	TX2_delay_val-=50;
 }
 
-void Set_Trasnmitter_TX1(void)
+void Set_Transmitter_Port1(void)
 {
 	HAL_GPIO_WritePin(TX1_EN_GPIO_Port, TX1_EN_Pin, 1);
 
 }
 
-void Set_Receiver_TX1(void)
+void Set_Receiver_Port1(void)
 {
 	HAL_GPIO_WritePin(TX1_EN_GPIO_Port, TX1_EN_Pin, 0);
 
 }
 
-void Set_Trasnmitter_TX2(void)
+void Set_Transmitter_Port2(void)
 {
 
 	HAL_GPIO_WritePin(TX2_EN_GPIO_Port, TX2_EN_Pin, 1);
 }
 
-void Set_Receiver_TX2(void)
+void Set_Receiver_Port2(void)
 {
 
 	HAL_GPIO_WritePin(TX1_EN_GPIO_Port, TX2_EN_Pin, 0);
