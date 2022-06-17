@@ -1,4 +1,4 @@
-ARM GAS  /tmp/ccphwSSG.s 			page 1
+ARM GAS  /tmp/ccYSBdAa.s 			page 1
 
 
    1              		.cpu cortex-m4
@@ -58,7 +58,7 @@ ARM GAS  /tmp/ccphwSSG.s 			page 1
   28:Core/Src/gpio.c **** /*----------------------------------------------------------------------------*/
   29:Core/Src/gpio.c **** /* Configure GPIO                                                             */
   30:Core/Src/gpio.c **** /*----------------------------------------------------------------------------*/
-ARM GAS  /tmp/ccphwSSG.s 			page 2
+ARM GAS  /tmp/ccYSBdAa.s 			page 2
 
 
   31:Core/Src/gpio.c **** /* USER CODE BEGIN 1 */
@@ -118,7 +118,7 @@ ARM GAS  /tmp/ccphwSSG.s 			page 1
   65 0020 02F01002 		and	r2, r2, #16
   66 0024 0092     		str	r2, [sp]
   67              		.loc 1 48 3 view .LVU7
-ARM GAS  /tmp/ccphwSSG.s 			page 3
+ARM GAS  /tmp/ccYSBdAa.s 			page 3
 
 
   68 0026 009A     		ldr	r2, [sp]
@@ -178,7 +178,7 @@ ARM GAS  /tmp/ccphwSSG.s 			page 1
   52:Core/Src/gpio.c ****   __HAL_RCC_GPIOG_CLK_ENABLE();
  119              		.loc 1 52 3 view .LVU27
  120              	.LBB6:
-ARM GAS  /tmp/ccphwSSG.s 			page 4
+ARM GAS  /tmp/ccYSBdAa.s 			page 4
 
 
  121              		.loc 1 52 3 view .LVU28
@@ -238,7 +238,7 @@ ARM GAS  /tmp/ccphwSSG.s 			page 1
  170 00a6 3F21     		movs	r1, #63
  171 00a8 4846     		mov	r0, r9
  172 00aa FFF7FEFF 		bl	HAL_GPIO_WritePin
-ARM GAS  /tmp/ccphwSSG.s 			page 5
+ARM GAS  /tmp/ccYSBdAa.s 			page 5
 
 
  173              	.LVL0:
@@ -298,7 +298,7 @@ ARM GAS  /tmp/ccphwSSG.s 			page 1
  207              		.loc 1 77 25 is_stmt 0 view .LVU56
  208 00e4 0A94     		str	r4, [sp, #40]
   78:Core/Src/gpio.c ****   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
-ARM GAS  /tmp/ccphwSSG.s 			page 6
+ARM GAS  /tmp/ccYSBdAa.s 			page 6
 
 
  209              		.loc 1 78 3 is_stmt 1 view .LVU57
@@ -358,7 +358,7 @@ ARM GAS  /tmp/ccphwSSG.s 			page 1
  245              		.loc 1 96 3 is_stmt 1 view .LVU75
  246 010e 07A9     		add	r1, sp, #28
  247 0110 3846     		mov	r0, r7
-ARM GAS  /tmp/ccphwSSG.s 			page 7
+ARM GAS  /tmp/ccYSBdAa.s 			page 7
 
 
  248 0112 FFF7FEFF 		bl	HAL_GPIO_Init
@@ -418,7 +418,7 @@ ARM GAS  /tmp/ccphwSSG.s 			page 1
  287              		@ sp needed
  288 013c BDE8F083 		pop	{r4, r5, r6, r7, r8, r9, pc}
  289              	.L4:
-ARM GAS  /tmp/ccphwSSG.s 			page 8
+ARM GAS  /tmp/ccYSBdAa.s 			page 8
 
 
  290              		.align	2
@@ -436,14 +436,14 @@ ARM GAS  /tmp/ccphwSSG.s 			page 1
  303              		.file 2 "/usr/lib/gcc/arm-none-eabi/10.3.1/include/stdint.h"
  304              		.file 3 "Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f429xx.h"
  305              		.file 4 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_gpio.h"
-ARM GAS  /tmp/ccphwSSG.s 			page 9
+ARM GAS  /tmp/ccYSBdAa.s 			page 9
 
 
 DEFINED SYMBOLS
                             *ABS*:0000000000000000 gpio.c
-     /tmp/ccphwSSG.s:18     .text.MX_GPIO_Init:0000000000000000 $t
-     /tmp/ccphwSSG.s:26     .text.MX_GPIO_Init:0000000000000000 MX_GPIO_Init
-     /tmp/ccphwSSG.s:292    .text.MX_GPIO_Init:0000000000000140 $d
+     /tmp/ccYSBdAa.s:18     .text.MX_GPIO_Init:0000000000000000 $t
+     /tmp/ccYSBdAa.s:26     .text.MX_GPIO_Init:0000000000000000 MX_GPIO_Init
+     /tmp/ccYSBdAa.s:292    .text.MX_GPIO_Init:0000000000000140 $d
 
 UNDEFINED SYMBOLS
 HAL_GPIO_WritePin

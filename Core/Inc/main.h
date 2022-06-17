@@ -111,7 +111,7 @@ void Error_Handler(void);
 #define EVENT_KEY2_RELEASED 4
 #define EVENT_TX1_UPDATE 5
 #define EVENT_TX2_UPDATE 6
-
+#define EVENT_RX_COMPLETE 7
 
 #define KEY_PRESSED 0b1100     //
 #define KEY_RELEASED 0b0011
@@ -120,6 +120,9 @@ void Error_Handler(void);
 #define STATE_TX1 1
 #define STATE_TX2 2
 #define STATE_TX_ALL 3
+
+#define CHECKSUM_ERROR 0
+#define CHECKSUM_NO_ERROR 1
 
 /* USER CODE END Private defines */
 
