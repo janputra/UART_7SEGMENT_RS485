@@ -47,7 +47,6 @@
 /* USER CODE BEGIN PV */
 unsigned char f_timer_TX=0;
 unsigned char f_seg_timer_500ms;
-unsigned char f_timer_100us =0;
 unsigned char f_timer_10ms=0;
 unsigned char f_timer_20ms=0;
 
@@ -79,25 +78,7 @@ unsigned char digit1_update = 0;
 unsigned char digit2_update = 0;
 unsigned char cmd, data;
 unsigned char lcd_process=0;
-uint8_t seven_segment_table[17] = {	0b1111110,	// '0'
-		    	0b0110000,	// '1'
-		   	0b1101101,	// '2'
-			0b1111001,	// '3'
-			0b0110011,	// '4'
-			0b1011011,	// '5'
-			0b1011111,	// '6'
-			0b1110000,	// '7'
-			0b1111111,	// '8'
-			0b1111011,	// '9'
-			0b1111101,	// 'a'  --10
-			0b0011111,	// 'b'  --11
-			0b0001101,	// 'c'  --12
-			0b0111101,	// 'd'  --13
-			0b1101111,	// 'e'	--14
-			0b1000111,	// 'f'  --15
-			0b0000001 	// '-'  --16
 
-};
 unsigned char digit_table[17]={"0123456789abcdef-"};
 
 uint8_t rx_temp;
@@ -178,12 +159,11 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_TIM3_Init();
   MX_TIM4_Init();
   MX_UART4_Init();
   MX_UART5_Init();
   /* USER CODE BEGIN 2 */
-  HAL_TIM_Base_Start_IT(&htim3);
+
   HAL_TIM_Base_Start_IT(&htim4);
 
   	
@@ -215,7 +195,7 @@ int main(void)
     /* USER CODE BEGIN 3 */
 
 	  	  	 task_timer();
-	  	     segment_display_task();
+	  	     ///segment_display_task();
 	  	     lcd_display_task();
 	  	     key_read_task();
 
@@ -270,25 +250,6 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-
-
-
-void segment_display_task(void)
-{
-   if(!f_timer_100us) return;
-   f_timer_100us =0;
-
-   flag_digit_1=(~flag_digit_1)&0x1;
-   if (flag_digit_1){
-	   seven_segment_driver(seven_segment_table[digit1],flag_digit_1);
-
-   }
-   else{
-	   seven_segment_driver(seven_segment_table[digit2],flag_digit_1);
-
-   }
-
-}
 
 void lcd_display_task(void){
 
@@ -358,8 +319,7 @@ void task_timer(void)
 	f_timer_10ms =0;		// clear the flag to wait next interupt
 
 	d_timer_30ms++;			// count timer for 30 ms interval
-				// count timer for LED interval
-
+			
 	if(d_timer_30ms==3)		// checking if the count reached 30 ms
 	{
 		d_timer_30ms =0;	// assign "0" to repeat counting
@@ -373,7 +333,7 @@ void task_timer(void)
 		f_timer_20ms=1;
 	}
 	
-/*
+
 	d_timer_TX1++;
 		if(d_timer_TX1>=TX1_delay_val)     // checking if the count reached LED interval
 		{
@@ -381,7 +341,7 @@ void task_timer(void)
 			buffer_push(&event_buffer,EVENT_TX1_UPDATE);
 
 		}
-
+/*
 	d_timer_TX2++;
 		if(d_timer_TX2>=TX2_delay_val)     // checking if the count reached LED interval
 		{
@@ -444,18 +404,11 @@ void main_task(void)
 				{
 					case EVENT_KEY1_PRESSED:
 						
-						TX_msg[0] = 0x1; 
-						TX_msg[1] = FUNC_WRITE;
-						TX_msg[2] = tx2_buffer[p_tx2++];
-						if (p_tx2>8){
-							p_tx2=0;
-						}
-
-						RS485_Send_Message();	
-						//TX1_delay_val=250;
-						//d_timer_TX1=250;
-						//Set_Transmitter_Port1();
-						//state = STATE_TX1;
+							
+						TX1_delay_val=250;
+						d_timer_TX1=250;
+						///Set_Transmitter_Port1();
+						state = STATE_TX1;
 												
 						break;
 					case EVENT_RX_COMPLETE:
@@ -478,10 +431,22 @@ void main_task(void)
 			switch (event){
 
 				case EVENT_TX1_UPDATE:
-					//uart_TX1_task();
-					//TX1_delay_update();
-					event=0;
-					break;
+						TX_msg[0] = 0x2; 
+						TX_msg[1] = FUNC_WRITE;
+						TX_msg[2] = tx2_buffer[p_tx2++];
+						if (p_tx2>8){
+							p_tx2=0;
+						}
+
+						RS485_Send_Message();
+					
+						TX1_delay_update();
+						event=0;
+						break;
+				case EVENT_RX_COMPLETE:
+						RS485_Read_Message();
+												
+						break;
 					/*
 				case EVENT_KEY2_PRESSED:
 					TX2_delay_val=250;
@@ -520,17 +485,25 @@ void TX2_delay_update(void){
 
 	TX2_delay_val-=50;
 }
-*/
 
+*/
 
 void RS485_Read_Message(void){
 
-  if (transmission_f) return;
+uint8_t*digit;
+  //if (transmission_f) return;
+  if(rx2_buffer.tail==rx2_buffer.head) return;
 
-  buffer_to_message(&rx2_buffer, &RX_msg);
+  buffer_to_message(&rx2_buffer, RX_msg);
 
-  if (check_checksum(&RX_msg)==CHECKSUM_ERROR) return;
-  if (RX_msg[0]!= ID) return;
+ // if (check_checksum(&RX_msg)==CHECKSUM_ERROR) return;
+  if (RX_msg[0]== 0x1) {
+	digit=&digit1;
+
+  }else if(RX_msg[0]== 0x2){
+	digit=&digit2
+
+  }
 /*
   if (RX_msg.function_code == FUNC_READ)
   {
@@ -540,42 +513,8 @@ void RS485_Read_Message(void){
 
    if (RX_msg[1] == FUNC_WRITE)
   { 
-    
-	  switch(RX_msg[2])
-	{
-		case '0':
-			digit1=0;
-			break;
-		case '1':
-			digit1=1;
-			break;
-		case '2':
-			digit1=2;
-			break;
-		case '3':
-			digit1=3;
-			break;
-		case '4':
-			digit1=4;
-			break;
-		case '5':
-			digit1=5;
-			break;
-		case '6':
-			digit1=6;
-			break;
-		case '7':
-			digit1=7;
-			break;
-		case '8':
-			digit1=8;
-			break;
-		case '9':
-			digit1=9;
-			break;
-		default:
-			break;
-	}
+    	*digit= RX_msg[2]-'0';
+	
   }
   
 }
@@ -597,32 +536,11 @@ void RS485_Send_Message(void)
 
 
 
-void seven_segment_driver(char input, char select_digit)
-{
-	uint32_t mask = S1_Pin|S2_Pin|S3_Pin|S4_Pin|S5_Pin|S6_Pin|S7_Pin;
-	uint32_t val = ((uint32_t) ~input)&mask;
-	if (!select_digit)
-	{
-		val |= (1)<<7; // pin 7
-	}else
-	{
-		val |= (1)<<8; //pin 8
-
-	}
-	GPIOF->ODR = val;
-
-}
-
-
-
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   // Check which version of the timer triggered this callback and toggle LED
-  if (htim == &htim3)
-  {
-	  f_timer_100us=1;
-  }
-  else if(htim == &htim4)
+
+   if(htim == &htim4)
   {
 	  f_timer_10ms=1;
 

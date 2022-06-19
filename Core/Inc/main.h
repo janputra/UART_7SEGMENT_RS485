@@ -65,28 +65,6 @@ void Error_Handler(void);
 #define RS_GPIO_Port GPIOE
 #define EN_Pin GPIO_PIN_5
 #define EN_GPIO_Port GPIOE
-#define S1_Pin GPIO_PIN_0
-#define S1_GPIO_Port GPIOF
-#define S2_Pin GPIO_PIN_1
-#define S2_GPIO_Port GPIOF
-#define S3_Pin GPIO_PIN_2
-#define S3_GPIO_Port GPIOF
-#define S4_Pin GPIO_PIN_3
-#define S4_GPIO_Port GPIOF
-#define S5_Pin GPIO_PIN_4
-#define S5_GPIO_Port GPIOF
-#define S6_Pin GPIO_PIN_5
-#define S6_GPIO_Port GPIOF
-#define S7_Pin GPIO_PIN_6
-#define S7_GPIO_Port GPIOF
-#define DIGIT1_Pin GPIO_PIN_7
-#define DIGIT1_GPIO_Port GPIOF
-#define DIGIT2_Pin GPIO_PIN_8
-#define DIGIT2_GPIO_Port GPIOF
-#define LED3_Pin GPIO_PIN_13
-#define LED3_GPIO_Port GPIOD
-#define LED4_Pin GPIO_PIN_14
-#define LED4_GPIO_Port GPIOD
 #define KEY1_Pin GPIO_PIN_2
 #define KEY1_GPIO_Port GPIOG
 #define KEY2_Pin GPIO_PIN_3
@@ -104,22 +82,20 @@ void Error_Handler(void);
 #define DIGIT1_E 0
 #define DIGIT2_E 1
 
-#define EVENT_NO_ENTRY 0
+#define EVENT_RESET 0
 #define EVENT_KEY1_PRESSED 1
 #define EVENT_KEY2_PRESSED 2
 #define EVENT_KEY1_RELEASED 3
 #define EVENT_KEY2_RELEASED 4
-#define EVENT_TX1_UPDATE 5
-#define EVENT_TX2_UPDATE 6
-#define EVENT_RX_COMPLETE 7
+#define EVENT_RX_COMPLETE 5
 
 #define KEY_PRESSED 0b1100     //
 #define KEY_RELEASED 0b0011
 
-#define STATE_IDLE 0
-#define STATE_TX1 1
-#define STATE_TX2 2
-#define STATE_TX_ALL 3
+#define STATE_WAITING_RESPOND 0
+#define STATE_SENDING_REQUEST 1
+#define STATE_READ_MESSAGE 2
+
 
 #define CHECKSUM_ERROR 0
 #define CHECKSUM_NO_ERROR 1
