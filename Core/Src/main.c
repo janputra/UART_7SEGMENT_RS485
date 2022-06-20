@@ -45,6 +45,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+uint8_t f_busy;
 unsigned char f_timer_TX=0;
 unsigned char f_seg_timer_500ms;
 unsigned char f_timer_10ms=0;
@@ -173,7 +174,8 @@ int main(void)
   HAL_UART_Receive_IT(&huart4, &rx1_buffer.data[rx1_buffer.head], 1);
   HAL_UART_Receive_IT(&huart5, &rx2_buffer.data[rx2_buffer.head], 1);
 
-  ID=1;
+  digit1=16;
+  digit2=16;
 
 
   lcd_init();
@@ -181,9 +183,9 @@ int main(void)
   lcd_set_pos(0, 3);
   lcd_write_string("TETRADYNE");
   lcd_set_pos(1, 0);
-  lcd_write_string("D2:");
+  lcd_write_string("S2:");
   lcd_set_pos(1, 0xC);
-  lcd_write_string("D1:");
+  lcd_write_string("S1:");
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -333,7 +335,7 @@ void task_timer(void)
 		f_timer_20ms=1;
 	}
 	
-
+/*
 	d_timer_TX1++;
 		if(d_timer_TX1>=TX1_delay_val)     // checking if the count reached LED interval
 		{
@@ -341,7 +343,7 @@ void task_timer(void)
 			buffer_push(&event_buffer,EVENT_TX1_UPDATE);
 
 		}
-/*
+
 	d_timer_TX2++;
 		if(d_timer_TX2>=TX2_delay_val)     // checking if the count reached LED interval
 		{
@@ -393,77 +395,69 @@ void main_task(void)
 {
 
 	if (event_buffer.head!=event_buffer.tail){
+		if (!f_busy){
 		event = buffer_pop(&event_buffer);   // if there is event then get the event from buffer
+		}
 	}
 
 	switch(state)
 	{
-		case STATE_IDLE:
+		case STATE_WAITING_RESPOND:
 
 			switch(event)
 				{
 					case EVENT_KEY1_PRESSED:
+						digit1++;
 						
-							
-						TX1_delay_val=250;
-						d_timer_TX1=250;
-						///Set_Transmitter_Port1();
-						state = STATE_TX1;
+               			 if (digit1>9){
+               			   digit1=0;
+               			 }
+						TX_msg[0]=0x1;
+						TX_msg[1]=FUNC_WRITE;
+						TX_msg[2]=digit1;
+						//f_busy=1;
+						RS485_Send_Message();
+						//state = STATE_SENDING_REQUEST;
+						event= EVENT_RESET;
+						break;
+					
+					case EVENT_KEY2_PRESSED:
+						digit2++;
+						if (digit2>15){
+                 		 digit2=10;
+               			 }	
+						TX_msg[0]=0x2;
+						TX_msg[1]=FUNC_WRITE;
+						TX_msg[2]=digit2;
+
+						//f_busy=1;
+						RS485_Send_Message();
+						//state = STATE_SENDING_REQUEST;
+						event= EVENT_RESET;
 												
 						break;
 					case EVENT_RX_COMPLETE:
 						RS485_Read_Message();
-												
+						//event= EVENT_RESET;
+						//f_busy=1;
+						//state = STATE_READ_MESSAGE;						
 						break;
-						/*
-					case EVENT_KEY2_PRESSED:
-						TX2_delay_val=250;
-						d_timer_TX2=250;
-						Set_Transmitter_Port2();
-						state = STATE_TX2;
-						
-						break;*/
+					
 				}
 			break;
 
-		case STATE_TX1:
+		case STATE_SENDING_REQUEST:
+			RS485_Send_Message();
+			state= STATE_WAITING_RESPOND;
+			f_busy=0;
+			
+			break;
+		case STATE_READ_MESSAGE:
 
-			switch (event){
-
-				case EVENT_TX1_UPDATE:
-						TX_msg[0] = 0x2; 
-						TX_msg[1] = FUNC_WRITE;
-						TX_msg[2] = tx2_buffer[p_tx2++];
-						if (p_tx2>8){
-							p_tx2=0;
-						}
-
-						RS485_Send_Message();
-					
-						TX1_delay_update();
-						event=0;
-						break;
-				case EVENT_RX_COMPLETE:
-						RS485_Read_Message();
-												
-						break;
-					/*
-				case EVENT_KEY2_PRESSED:
-					TX2_delay_val=250;
-					d_timer_TX2=250;
-
-					state = STATE_TX_ALL;
-					break;*/
-
-				case EVENT_KEY1_RELEASED:
-					//Set_Receiver_Port1();
-					state = STATE_IDLE;
-
-
-					break;
-
-			}
-
+			RS485_Read_Message();
+			//f_busy=0;
+			state= STATE_WAITING_RESPOND;
+			event= EVENT_RESET;
 			break;
 
 	
@@ -490,7 +484,7 @@ void TX2_delay_update(void){
 
 void RS485_Read_Message(void){
 
-uint8_t*digit;
+  
   //if (transmission_f) return;
   if(rx2_buffer.tail==rx2_buffer.head) return;
 
@@ -498,10 +492,10 @@ uint8_t*digit;
 
  // if (check_checksum(&RX_msg)==CHECKSUM_ERROR) return;
   if (RX_msg[0]== 0x1) {
-	digit=&digit1;
+	//digit=&digit1;
 
   }else if(RX_msg[0]== 0x2){
-	digit=&digit2
+	//digit=&digit2;
 
   }
 /*
@@ -513,7 +507,8 @@ uint8_t*digit;
 
    if (RX_msg[1] == FUNC_WRITE)
   { 
-    	*digit= RX_msg[2]-'0';
+    	//*digit= RX_msg[2];
+		digit1=RX_msg[2];
 	
   }
   
@@ -522,6 +517,8 @@ uint8_t*digit;
 void RS485_Send_Message(void)
 {
 
+	
+	
    //uint8_t *pbuf_tx = (uint8_t *)&msg; 
    HAL_GPIO_WritePin(TX1_EN_GPIO_Port, TX1_EN_Pin, 1); /// Enable Transmitter Mode
    HAL_UART_Transmit(&huart4,&start_cmd,1,10);
@@ -553,14 +550,14 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	//HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
 
-	 if(huart == &huart5)
+	 if(huart == &huart4)
 	{
 		if (rx_temp==0x2)
-		{
+		{		//digit1= 0;
 				transmission_f=1;
 		}
 		else if (rx_temp==0x3)
-		{
+		{		//digit1= 2;
 				transmission_f=0;
 				buffer_push(&event_buffer,EVENT_RX_COMPLETE);
 		}
@@ -572,7 +569,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 			}
 		}
 
-		HAL_UART_Receive_IT(&huart5, &rx_temp, 1);
+		HAL_UART_Receive_IT(&huart4, &rx_temp, 1);
     }
   
 
