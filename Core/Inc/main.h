@@ -88,6 +88,7 @@ void Error_Handler(void);
 #define EVENT_KEY1_RELEASED 3
 #define EVENT_KEY2_RELEASED 4
 #define EVENT_RX_COMPLETE 5
+#define EVENT_QUERRY 6
 
 #define KEY_PRESSED 0b1100     //
 #define KEY_RELEASED 0b0011
@@ -95,6 +96,7 @@ void Error_Handler(void);
 #define STATE_WAITING_RESPOND 0
 #define STATE_SENDING_REQUEST 1
 #define STATE_READ_MESSAGE 2
+#define STATE_ERROR_HANDLER 4
 
 
 #define CHECKSUM_ERROR 0
