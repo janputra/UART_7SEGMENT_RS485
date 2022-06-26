@@ -92,14 +92,16 @@ void Error_Handler(void);
 
 #define ERROR_RESET 0
 #define ERROR_CHECKSUM 1
+#define ERROR_UNKNOWN_ADDR 2 
 
 #define KEY_PRESSED 0b1100     //
 #define KEY_RELEASED 0b0011
 
-#define STATE_WAITING_RESPOND 0
-#define STATE_SENDING_REQUEST 1
-#define STATE_READ_MESSAGE 2
-#define STATE_ERROR_HANDLER 4
+#define STATE_ASSIGNED_ADDR 0
+#define STATE_OPERATION 1
+
+#define ADDR 0x10
+
 
 
 #define CHECKSUM_ERROR 0
