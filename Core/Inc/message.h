@@ -10,6 +10,7 @@ extern "C" {
 
 #define FUNC_WRITE 1
 #define FUNC_READ 2
+#define FUNC_RESEND 3
 
 /*
 typedef struct __attribute__((packed)) messsage

@@ -66,7 +66,7 @@ unsigned char TX1_delay_val =250;
 unsigned char d_timer_TX2;
 unsigned char TX2_delay_val =250;
 unsigned char key1_data, key2_data;
-unsigned char state,event;
+unsigned char state,event,error;
 
 unsigned char digit1,digit2;
 //flag for LCD
@@ -461,6 +461,7 @@ void main_task(void)
 						f_busy=1;
 						state = STATE_SENDING_REQUEST;
 						break;
+
 				}
 			break;
 
@@ -473,12 +474,21 @@ void main_task(void)
 		case STATE_READ_MESSAGE:
 
 			RS485_Read_Message();
+			
+			if (error==ERROR_CHECKSUM){
+				TX_msg[0]=RX_msg[0];
+				TX_msg[1]=FUNC_RESEND;
+				TX_msg[2]=0xFF;
+				state = STATE_SENDING_REQUEST;
+				error = ERROR_RESET;
+				break;
+			}	
 			f_busy=0;
 			state= STATE_WAITING_RESPOND;
 			event= EVENT_RESET;
 			break;
-		case STATE_ERROR_HANDLER:
-			break;
+
+	
 	
 	}
 
@@ -503,7 +513,7 @@ void TX2_delay_update(void){
 
 void RS485_Read_Message(void){
 
-  
+  uint8_t *digit;
   //if (transmission_f) return;
   if(rx2_buffer.tail==rx2_buffer.head) return;
 
@@ -511,19 +521,24 @@ void RS485_Read_Message(void){
 
  	if (check_checksum(RX_msg)==CHECKSUM_ERROR)
  	{
+		error = ERROR_CHECKSUM;
 		return;
  	} 
- 
+		
+	if (RX_msg[0]== 0x10) {
+			digit = &digit1;
+
+  	}else if(RX_msg[0]== 0x20){
+			digit =&digit2;
+ 		 }
+
    if (RX_msg[1] == FUNC_READ)
    { 
-    	
-		if (RX_msg[0]== 0x10) {
-			digit1=(RX_msg[2]-'0');
-
-  		}else if(RX_msg[0]== 0x20){
-			digit2=(RX_msg[2]-'0');
- 		 }
-	
+    	*digit=(RX_msg[2]-'0');
+   }
+    else if (RX_msg[1] == FUNC_RESEND)
+   { 
+    	state = STATE_SENDING_REQUEST;
    }
   
 }

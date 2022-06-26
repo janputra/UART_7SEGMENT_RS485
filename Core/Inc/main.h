@@ -90,6 +90,9 @@ void Error_Handler(void);
 #define EVENT_RX_COMPLETE 5
 #define EVENT_QUERRY 6
 
+#define ERROR_RESET 0
+#define ERROR_CHECKSUM 1
+
 #define KEY_PRESSED 0b1100     //
 #define KEY_RELEASED 0b0011
 
