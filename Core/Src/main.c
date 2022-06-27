@@ -172,7 +172,7 @@ int main(void)
 
 	digit1 = 16;
 	digit2 = 16;
-	num_slave=2;
+	num_slave=0;
 	if (num_slave>0){
 		state = STATE_OPERATION;
 	}
@@ -414,61 +414,74 @@ void main_task(void)
 	switch(state)
 	{
 		case STATE_ASSIGNED_ADDR:
-			num_slave++;
-			RS485_Send_Message(0x10, FUNC_ASSIGN_ADDR, ADDR|num_slave);
+			case EVENT_QUERRY:
+				RS485_Send_Message(ADDR, FUNC_READ, 0xFF);
+				event = EVENT_RESET;
+				break;
+
+			case EVENT_RX_COMPLETE:
+
+				RS485_Read_Message();
+				event = EVENT_RESET;
+				break;
+
+			case EVENT_NEW_DEVICE:
+				state = STATE_OPERATION;
+				num_slave++;
+				RS485_Send_Message(0x10, FUNC_ASSIGN_ADDR, ADDR|num_slave);
+				event = EVENT_RESET;
+				break;
 			
 		break;
 
 		case STATE_OPERATION:
 			switch (event)
-		{
-		case EVENT_KEY1_PRESSED:
-			digit1++;
-
-			if (digit1 > 9)
 			{
-				digit1 = 0;
-			}
+			case EVENT_KEY1_PRESSED:
+				digit1++;
 
-			RS485_Send_Message(0x10, FUNC_WRITE, (digit1 + '0'));
-			event = EVENT_RESET;
-			break;
-
-		case EVENT_KEY2_PRESSED:
-			digit2++;
-			if (digit2 > 15)
-			{
-				digit2 = 10;
-			}
-			RS485_Send_Message(0x10, FUNC_WRITE, (digit1 + '0'));
-
-			event = EVENT_RESET;
-
-			break;
-		case EVENT_RX_COMPLETE:
-
-			RS485_Read_Message();
-			event = EVENT_RESET;
-			break;
-
-		case EVENT_QUERRY:
-
-			if (!num_slave) return;
-
-			for (int i =0; i <num_slave+1;i++){
-				if (f_querry==i) {
-				RS485_Send_Message((ADDR|i), FUNC_READ, 0xFF);
-				break;	
+				if (digit1 > 9)
+				{
+					digit1 = 0;
 				}
+
+				RS485_Send_Message(0x10, FUNC_WRITE, (digit1 + '0'));
+				event = EVENT_RESET;
+				break;
+
+			case EVENT_KEY2_PRESSED:
+				digit2++;
+				if (digit2 > 15)
+				{
+					digit2 = 10;
+				}
+				RS485_Send_Message(0x10, FUNC_WRITE, (digit1 + '0'));
+
+				event = EVENT_RESET;
+
+				break;
+			case EVENT_RX_COMPLETE:
+
+				RS485_Read_Message();
+				event = EVENT_RESET;
+				break;
+
+			case EVENT_QUERRY:
+
+				for (int i =0; i <num_slave+1;i++){
+					if (f_querry==i) {
+					RS485_Send_Message((ADDR|i), FUNC_READ, 0xFF);
+					break;	
+					}
+				}
+				f_querry++;
+				if (f_querry==num_slave){
+					f_querry=0;
+				}	
+						
+				event = EVENT_RESET;
+				break;
 			}
-			 f_querry++;
-			 if (f_querry==num_slave){
-				f_querry=0;
-			 }	
-					
-			event = EVENT_RESET;
-			break;
-		}
 		break;
 
 	}
@@ -505,19 +518,23 @@ void RS485_Read_Message(void)
 
 	if (check_checksum(RX_msg) == CHECKSUM_ERROR)
 	{
-		error = ERROR_CHECKSUM;
+		//RS485_Send_Message(TX_msg[0], TX_msg[1], TX_msg[2]);
+		//error = ERROR_CHECKSUM;
 		return;
 	}
 
-	if (RX_msg[0] == ADDR|1)
+	if (RX_msg[0] == (ADDR|1))
 	{
 		 digit = &digit1;
 	}
-	else if (RX_msg[0] == ADDR|2)
+	else if (RX_msg[0] == (ADDR|2))
 	{
 		 digit = &digit2;
 	}else if(RX_msg[0] == ADDR){
-		error = ERROR_UNKNOWN_ADDR;
+		 buffer_push(&event_buffer, EVENT_NEW_DEVICE);
+		 state = STATE_ASSIGNED_ADDR;	
+		return;
+	}else{
 		return;
 	}
 
@@ -527,9 +544,7 @@ void RS485_Read_Message(void)
 	}
 	else if (RX_msg[1] == FUNC_RESEND)
 	{
-	
-	}else if (RX_msg[1]== FUNC_ASSIGN_ADDR){
-
+		RS485_Send_Message(TX_msg[0], TX_msg[1], TX_msg[2]);
 	}
 }
 

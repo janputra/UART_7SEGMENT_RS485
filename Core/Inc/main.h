@@ -89,6 +89,7 @@ void Error_Handler(void);
 #define EVENT_KEY2_RELEASED 4
 #define EVENT_RX_COMPLETE 5
 #define EVENT_QUERRY 6
+#define EVENT_NEW_DEVICE 7
 
 #define ERROR_RESET 0
 #define ERROR_CHECKSUM 1
