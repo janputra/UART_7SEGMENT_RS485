@@ -50,10 +50,10 @@ unsigned char f_timer_TX = 0;
 unsigned char f_seg_timer_500ms;
 unsigned char f_timer_10ms = 0;
 unsigned char f_timer_20ms = 0;
-
+unsigned char f_waiting_rx = 0;
 unsigned char f_timer_30ms = 0;
 unsigned char f_timer_50ms = 0;
-unsigned char f_querry = 0;
+unsigned char n_querry = 0;
 unsigned char flag_digit_1 = 1;
 
 unsigned char tx2_buffer[10] = {"123456789"};
@@ -175,6 +175,8 @@ int main(void)
 	num_slave=0;
 	if (num_slave>0){
 		state = STATE_OPERATION;
+	}else{
+		state=STATE_ASSIGNED_ADDR;
 	}
 
 	lcd_init();
@@ -414,24 +416,30 @@ void main_task(void)
 	switch(state)
 	{
 		case STATE_ASSIGNED_ADDR:
-			case EVENT_QUERRY:
-				RS485_Send_Message(ADDR, FUNC_READ, 0xFF);
-				event = EVENT_RESET;
-				break;
+			switch (event)
+				{
+				case EVENT_QUERRY:
+					
+					
+					RS485_Send_Message(ADDR, FUNC_READ, 0x00);
+					
+					event = EVENT_RESET;
+					break;
 
-			case EVENT_RX_COMPLETE:
+				case EVENT_RX_COMPLETE:
 
-				RS485_Read_Message();
-				event = EVENT_RESET;
-				break;
+					RS485_Read_Message();
+					
+					event = EVENT_RESET;
+					break;
 
-			case EVENT_NEW_DEVICE:
-				state = STATE_OPERATION;
-				num_slave++;
-				RS485_Send_Message(0x10, FUNC_ASSIGN_ADDR, ADDR|num_slave);
-				event = EVENT_RESET;
-				break;
-			
+				case EVENT_NEW_DEVICE:
+					state = STATE_OPERATION;
+					num_slave++;
+					RS485_Send_Message(0x10, FUNC_ASSIGN_ADDR, ADDR|num_slave);
+					event = EVENT_RESET;
+					break;
+				}
 		break;
 
 		case STATE_OPERATION:
@@ -445,17 +453,17 @@ void main_task(void)
 					digit1 = 0;
 				}
 
-				RS485_Send_Message(0x10, FUNC_WRITE, (digit1 + '0'));
+				RS485_Send_Message((ADDR|1), FUNC_WRITE, (digit1 + '0'));
 				event = EVENT_RESET;
 				break;
 
 			case EVENT_KEY2_PRESSED:
 				digit2++;
-				if (digit2 > 15)
+				if (digit2 > 9)
 				{
-					digit2 = 10;
+					digit2 = 0;
 				}
-				RS485_Send_Message(0x10, FUNC_WRITE, (digit1 + '0'));
+				RS485_Send_Message((ADDR|2), FUNC_WRITE, (digit2 + '0'));
 
 				event = EVENT_RESET;
 
@@ -463,20 +471,24 @@ void main_task(void)
 			case EVENT_RX_COMPLETE:
 
 				RS485_Read_Message();
+				
 				event = EVENT_RESET;
 				break;
 
 			case EVENT_QUERRY:
+				
+				
 
 				for (int i =0; i <num_slave+1;i++){
-					if (f_querry==i) {
-					RS485_Send_Message((ADDR|i), FUNC_READ, 0xFF);
+					if (n_querry==i) {
+					RS485_Send_Message((ADDR|i), FUNC_READ, 0x00);
+					
 					break;	
 					}
 				}
-				f_querry++;
-				if (f_querry==num_slave){
-					f_querry=0;
+				n_querry++;
+				if (n_querry==num_slave+1){
+					n_querry=0;
 				}	
 						
 				event = EVENT_RESET;
@@ -511,8 +523,6 @@ void TX2_delay_update(void){
 void RS485_Read_Message(void)
 {
 	uint8_t * digit;
-	if (rx2_buffer.tail == rx2_buffer.head)
-		return;
 
 	buffer_to_message(&rx2_buffer, RX_msg);
 
