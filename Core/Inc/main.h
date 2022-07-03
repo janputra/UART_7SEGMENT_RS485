@@ -110,12 +110,15 @@ void Error_Handler(void);
 #define FUNC_RESEND 3
 #define FUNC_ASSIGN_ADDR 4
 
-
 #define CHECKSUM_ERROR 0
 #define CHECKSUM_NO_ERROR 1
 
-#define SOT 0x2
-#define EOT 0x3
+#define SOF 0x2
+#define EOF 0x3
+
+
+
+
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
