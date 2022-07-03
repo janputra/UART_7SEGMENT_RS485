@@ -25,7 +25,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "lcd16x2.h"
-#include "message.h"
+#include "buffer.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -82,19 +82,20 @@ unsigned char digit_table[17] = {"0123456789abcdef-"};
 
 uint8_t rx_temp;
 uint8_t transmission_f;
-uint8_t start_cmd = 0x2;
-uint8_t stop_cmd = 0x3;
-circular_buffer rx1_buffer;
-circular_buffer rx2_buffer;
+buffer_tx_msg tx_buffer;
+circular_buffer rx_buffer;
 circular_buffer event_buffer;
+tx_msg rx_msg;
 uint8_t ID;
-uint8_t TX_msg[4];
+uint8_t TX_msg[6];
 uint8_t RX_msg[4];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
+void RS485_RX_Task(void);
+uint8_t checksum(uint8_t* buffer, uint8_t num_data);
 void task_timer(void);
 void counting_task(void);
 void uart_TX2_task(void);
@@ -114,7 +115,7 @@ void Set_Transmitter_Port1(void);
 void Set_Transmitter_Port2(void);
 void Set_Receiver_Port1(void);
 void Set_Receiver_Port2(void);
-void RS485_Send_Message(uint8_t address, uint8_t func_code, uint8_t data);
+void RS485_Send_Message(tx_msg _tx_msg);
 void RS485_Read_Message(void);
 /*
 unsigned char m_send_to_lcd(char data);
@@ -412,7 +413,16 @@ void main_task(void)
 
 	}
 
-
+	switch (state)
+	{
+	case STATE_ASSIGNED_ADDR:
+		
+		break;
+	
+	default:
+		break;
+	}
+	/*
 	switch(state)
 	{
 		case STATE_ASSIGNED_ADDR:
@@ -498,39 +508,52 @@ void main_task(void)
 
 	}
 
+	*/
+
+
+}
+
+void RS485_RX_Task(void)
+{
 	
+	if (rx_buffer.tail==rx_buffer.head) return;
+	
+	
+	if (rx_buffer.data[rx_buffer.tail]==SOF)
+	{
+		
+	}else if(rx_buffer.data[rx_buffer.tail]==EOF)
+	{
+		RS485_Read_Message();
 
+	}
+
+	rx_buffer.tail = (rx_buffer.tail+1)%BUFFER_SIZE;
 
 }
 
-/*
-void TX1_delay_update(void){
 
-	if (TX1_delay_val==50) return;
+void RS485_TX_Task(void)
+{
+	
+	if (tx_buffer.tail==tx_buffer.head) return;
 
-	TX1_delay_val-=50;
+	// if ()	
+	RS485_Send_Message(tx_buffer.buffer[tx_buffer.tail]);
+
+	tx_buffer.tail = (tx_buffer.tail+1)%BUFFER_SIZE;
+
+	
 }
-
-void TX2_delay_update(void){
-
-	if (TX2_delay_val==50) return;
-
-	TX2_delay_val-=50;
-}
-
-*/
 
 void RS485_Read_Message(void)
 {
 	uint8_t * digit;
 
-	buffer_to_message(&rx2_buffer, RX_msg);
-
-	if (check_checksum(RX_msg) == CHECKSUM_ERROR)
+	if (checksum(RX_msg,3)== RX_msg[3])
 	{
-		//RS485_Send_Message(TX_msg[0], TX_msg[1], TX_msg[2]);
-		//error = ERROR_CHECKSUM;
-		return;
+
+
 	}
 
 	if (RX_msg[0] == (ADDR|1))
@@ -554,25 +577,26 @@ void RS485_Read_Message(void)
 	}
 	else if (RX_msg[1] == FUNC_RESEND)
 	{
-		RS485_Send_Message(TX_msg[0], TX_msg[1], TX_msg[2]);
+		//RS485_Send_Message(TX_msg[0], TX_msg[1], TX_msg[2]);
 	}
 }
 
-void RS485_Send_Message(uint8_t address, uint8_t func_code, uint8_t data)
+
+
+void RS485_Send_Message(tx_msg _tx_msg)
 {
-	TX_msg[0] = address;
-	TX_msg[1] = func_code;
-	TX_msg[2] = data;
-	cal_checksum(TX_msg);
+	
+
+	TX_msg[0] = SOF;
+	TX_msg[1] = _tx_msg.addr;
+	TX_msg[2] = _tx_msg.func_code;
+	TX_msg[3] = _tx_msg.data;
+	TX_msg[4] = (((0x00^_tx_msg.addr)^_tx_msg.func_code)^_tx_msg.data);    // checksum
+	TX_msg[5] = EOF;
 
 	// uint8_t *pbuf_tx = (uint8_t *)&msg;
 	HAL_GPIO_WritePin(TX1_EN_GPIO_Port, TX1_EN_Pin, 1); /// Enable Transmitter Mode
-	HAL_UART_Transmit(&huart4, &start_cmd, 1, 10);
-
 	HAL_UART_Transmit(&huart4, TX_msg, sizeof(TX_msg), 10);
-
-	HAL_UART_Transmit(&huart4, &stop_cmd, 1, 10);
-
 	HAL_GPIO_WritePin(TX1_EN_GPIO_Port, TX1_EN_Pin, 0); /// Enable Receiver Mode
 }
 
@@ -592,27 +616,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 
 	if (huart == &huart4)
 	{
-
-		if (!transmission_f)
-		{
-			if (rx_temp == 0x2)
-			{
-				transmission_f = 1;
-			}
-		}
-		else
-		{
-			if (rx_temp == 0x3)
-			{ // digit1= 2;
-				transmission_f = 0;
-				buffer_push(&event_buffer, EVENT_RX_COMPLETE);
-				HAL_UART_Receive_IT(&huart4, &rx_temp, 1);
-				return;
-			}
-
-			buffer_push(&rx2_buffer, rx_temp);
-		}
-
+		buffer_push(&rx_buffer, rx_temp);
 		HAL_UART_Receive_IT(&huart4, &rx_temp, 1);
 	}
 }
