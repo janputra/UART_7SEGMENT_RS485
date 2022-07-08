@@ -46,6 +46,7 @@
 
 /* USER CODE BEGIN PV */
 uint8_t f_busy;
+uint8_t f_read_msg;
 unsigned char f_timer_TX = 0;
 unsigned char f_seg_timer_500ms;
 unsigned char f_timer_10ms = 0;
@@ -89,6 +90,7 @@ tx_msg rx_msg;
 uint8_t ID;
 uint8_t TX_msg[6];
 uint8_t RX_msg[4];
+uint8_t *pRX_msg;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -202,7 +204,8 @@ int main(void)
 		/// segment_display_task();
 		lcd_display_task();
 		key_read_task();
-
+		RS485_RX_Task();
+		RS485_TX_Task();
 		main_task();
 	}
 	/* USER CODE END 3 */
@@ -521,13 +524,20 @@ void RS485_RX_Task(void)
 	
 	if (rx_buffer.data[rx_buffer.tail]==SOF)
 	{
-		
+		f_read_msg =1;
+		pRX_msg = RX_msg;
+
 	}else if(rx_buffer.data[rx_buffer.tail]==EOF)
 	{
-		RS485_Read_Message();
+		f_read_msg =0;
 
+		//RS485_Read_Message();  event msg ready 
+	}else{
+
+		if (f_read_msg){
+			*pRX_msg++=rx_buffer.data[rx_buffer.tail];
+		}	
 	}
-
 	rx_buffer.tail = (rx_buffer.tail+1)%BUFFER_SIZE;
 
 }
