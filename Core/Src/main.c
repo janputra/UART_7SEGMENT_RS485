@@ -183,8 +183,9 @@ int main(void)
 	digit2 = 16;
 	num_slave=2;
 	ID=0;
-	ID_list[0]= 0x10;
+	ID_list[0]= 0xFF;
 	ID_list[1]= 0x12;
+	ID_list[2]= 0x12;
 	state = STATE_TX;
 	/*
 	if (num_slave>0){
@@ -462,12 +463,18 @@ void main_task(void)
 			pTX_msg = &TX_msg[1];
 			
 			*pTX_msg++ = ID_list[ID];
-			ID = (ID+1) == num_slave? 0:ID+1;
-
-			//digit2=(digit2+1)>15? 0 :digit2+1;
-			*pTX_msg++ = FUNC_READ;
-			*pTX_msg++ = '0';
 			
+			if(ID==0){
+				*pTX_msg++ = FUNC_FIND_SLAVE;
+				*pTX_msg++ = '0';
+			}else{
+			//digit2=(digit2+1)>15? 0 :digit2+1;
+				*pTX_msg++ = FUNC_READ;
+				*pTX_msg++ = '0';
+			}
+
+			ID = (ID+1) == num_slave+1? 0:ID+1;
+
 			RS485_Send_Message();
 			state = STATE_WAITING_RX;
 			break;
@@ -538,7 +545,7 @@ void RS485_RX_Task(void)
 void RS485_Read_Message(void)
 {
 	//digit2 = 10;
-	uint8_t * digit;
+	//uint8_t * digit;
 	uint8_t checksum = 0;
 
 	checksum = checksum^RX_msg[0]^RX_msg[1]^RX_msg[2];
@@ -551,25 +558,40 @@ void RS485_Read_Message(void)
 
 	if ((RX_msg[0] == 0x10))
 	{
-		digit =&digit1;
+		if (RX_msg[1] == FUNC_READ)
+		{	
+			digit1 = (RX_msg[2] - '0');
+			
+		}
+		else if (RX_msg[1] == FUNC_WRITE)
+		{
+			
+		}
 
 	}else if ((RX_msg[0] == 0x12))
 	{
-		digit =&digit2;
-	}else{
+		if (RX_msg[1] == FUNC_READ)
+		{	
+			digit2 = (RX_msg[2] - '0');
+			
+		}
+		else if (RX_msg[1] == FUNC_WRITE)
+		{
+			
+	}
+	}else if(RX_msg[0]==0xFF){
+
+		if (RX_msg[1]== FUNC_FIND_SLAVE){
+
+		}
+		//buffer_push(&event_buffer,EVENT_SLAVE_FOUND);
+	
+	}
+	else{
 		return;
 	}
-	
 
-	if (RX_msg[1] == FUNC_READ)
-	{	
-		*digit = (RX_msg[2] - '0');
-		
-	}
-	else if (RX_msg[1] == FUNC_WRITE)
-	{
-		
-	}
+	
 }
 
 

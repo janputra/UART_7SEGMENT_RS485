@@ -6,7 +6,7 @@ make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Sun Jul 10 21:04:58 2022
+# Make data base, printed on Sun Jul 10 21:14:31 2022
 
 # Variables
 
@@ -59,7 +59,7 @@ XDG_DATA_DIRS = /usr/share/plasma:/usr/share/gnome:/home/jan/.local/share/flatpa
 # environment
 VSCODE_CODE_CACHE_PATH = /home/jan/.config/Code/CachedData/92d25e35d9bf1a6b16f7d0758f25d48ace11e5b9
 # environment
-XDG_SESSION_PATH = /org/freedesktop/DisplayManager/Session1
+XDG_SESSION_PATH = /org/freedesktop/DisplayManager/Session3
 # makefile (from 'Makefile', line 108)
 AS_DEFS = 
 # environment
@@ -87,7 +87,7 @@ PAM_KWALLET5_LOGIN = /run/user/1000/kwallet5.socket
 # environment
 MFLAGS = -pqrR
 # environment
-SSH_AUTH_SOCK = /tmp/ssh-XXXXXXa4PQVo/agent.1738
+SSH_AUTH_SOCK = /tmp/ssh-XXXXXXN3AE6q/agent.210865
 # default
 .SHELLFLAGS := -c
 # environment
@@ -107,7 +107,7 @@ ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffuncti
 # automatic
 @F = $(notdir $@)
 # environment
-VSCODE_PID = 209403
+VSCODE_PID = 216022
 # environment
 XDG_SESSION_TYPE = x11
 # automatic
@@ -117,7 +117,7 @@ AS_INCLUDES =
 # makefile (from 'Makefile', line 85)
 CP = $(PREFIX)objcopy
 # environment
-SESSION_MANAGER = local/g5-ubuntu:@/tmp/.ICE-unix/2024,unix/g5-ubuntu:/tmp/.ICE-unix/2024
+SESSION_MANAGER = local/g5-ubuntu:@/tmp/.ICE-unix/211226,unix/g5-ubuntu:/tmp/.ICE-unix/211226
 # automatic
 *F = $(notdir $*)
 # environment
@@ -160,8 +160,6 @@ FLOAT-ABI = -mfloat-abi=hard
 LC_TIME = en_US.UTF-8
 # makefile (from 'Makefile', line 74)
 PREFIX = arm-none-eabi-
-# environment
-INVOCATION_ID = e9f4845d25094ac6adb2b28635a09b75
 # makefile (from 'Makefile', line 95)
 CPU = -mcpu=cortex-m4
 # environment
@@ -199,7 +197,7 @@ XDG_VTNR = 1
 # makefile
 .DEFAULT_GOAL := all
 # environment
-SYSTEMD_EXEC_PID = 14045
+SYSTEMD_EXEC_PID = 210805
 # environment
 DISPLAY = :0
 # environment
@@ -212,8 +210,6 @@ MAKE_VERSION := 4.3
 KDE_SESSION_UID = 1000
 # makefile (from 'Makefile', line 151)
 LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
-# environment
-MANAGERPID = 1668
 # makefile (from 'Makefile', line 104)
 MCU = $(CPU) -mthumb $(FPU) $(FLOAT-ABI)
 # environment
@@ -221,7 +217,7 @@ LC_MEASUREMENT = en_US.UTF-8
 # environment
 QT_STYLE_OVERRIDE = kvantum
 # environment
-SSH_AGENT_PID = 1813
+SSH_AGENT_PID = 210974
 # environment
 _ = /usr/share/code/code
 # environment
@@ -234,8 +230,6 @@ XDG_RUNTIME_DIR = /run/user/1000
 CFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections -g -gdwarf-2 -MMD -MP -MF"$(@:%.o=%.d)"
 # environment
 GPG_AGENT_INFO = /run/user/1000/gnupg/S.gpg-agent:0:1
-# environment
-JOURNAL_STREAM = 8:141992
 # environment
 XDG_SESSION_CLASS = user
 # environment
@@ -253,7 +247,7 @@ ELECTRON_RUN_AS_NODE = 1
 # environment
 VSCODE_IPC_HOOK = /run/user/1000/vscode-304b7496-1.69.0-main.sock
 # environment
-XDG_SESSION_ID = 3
+XDG_SESSION_ID = 62
 # environment
 XCURSOR_SIZE = 24
 # environment
@@ -287,11 +281,10 @@ KDE_FULL_SESSION = true
 # environment
 LC_IDENTIFICATION = en_US.UTF-8
 # variable set hash-table stats:
-# Load=138/1024=13%, Rehash=0, Collisions=67/272=25%
+# Load=135/1024=13%, Rehash=0, Collisions=67/269=25%
 
 # Pattern-specific Variable Values
 
- 
 # No pattern-specific variable values.
 
 # Directories
@@ -306,6 +299,7 @@ LC_IDENTIFICATION = en_US.UTF-8
 # Implicit Rules
 
 build/%.o: %.c Makefile | build
+ 
 #  recipe to execute (from 'Makefile', line 168):
 	$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
 
@@ -558,7 +552,6 @@ Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc_ex.c:
 
 Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc_ex.h:
 #  Implicit rule search has been done.
- 
 #  Last modified 2022-06-18 23:59:10.411029514
 #  File has been updated.
 #  Successfully updated.
@@ -588,6 +581,7 @@ Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_gpio.h:
 
 # Not a target:
 Core/Src/system_stm32f4xx.c:
+ 
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -819,7 +813,6 @@ build/message.d:
 #  Successfully updated.
 
 # Not a target:
- 
 build/stm32f4xx_hal_pwr.d:
 #  Implicit rule search has been done.
 #  Last modified 2022-06-20 23:52:08.128216418
@@ -856,6 +849,7 @@ Core/Inc/gpio.h:
 #  File has been updated.
 #  Successfully updated.
 
+ 
 Core/Inc/stm32f4xx_it.h:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
@@ -995,7 +989,6 @@ Drivers/CMSIS/Include/cmsis_gcc.h:
 #  File has been updated.
 #  Successfully updated.
 
- 
 build/tim.o: Core/Src/tim.c Core/Inc/tim.h Core/Inc/main.h Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h Core/Inc/stm32f4xx_hal_conf.h Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f4xx.h Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f429xx.h Drivers/CMSIS/Include/core_cm4.h Drivers/CMSIS/Include/cmsis_version.h Drivers/CMSIS/Include/cmsis_compiler.h Drivers/CMSIS/Include/cmsis_gcc.h Drivers/CMSIS/Include/mpu_armv7.h Drivers/CMSIS/Device/ST/STM32F4xx/Include/system_stm32f4xx.h Drivers/STM32F4xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc_ex.h Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_gpio.h Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_gpio_ex.h Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_exti.h Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_dma.h Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_dma_ex.h Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_cortex.h Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_flash.h Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_flash_ex.h Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_flash_ramfunc.h Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr.h Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr_ex.h Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h
 #  Implicit rule search has not been done.
 #  Modification time never checked.
@@ -1128,6 +1121,6 @@ vpath %.c Core/Src:Drivers/STM32F4xx_HAL_Driver/Src
 # strcache performance: lookups = 2573 / hit rate = 90%
 # hash-table stats:
 # Load=241/8192=3%, Rehash=0, Collisions=164/2573=6%
-# Finished Make data base on Sun Jul 10 21:04:58 2022
+# Finished Make data base on Sun Jul 10 21:14:31 2022
 
  

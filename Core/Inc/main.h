@@ -89,7 +89,7 @@ void Error_Handler(void);
 #define EVENT_KEY2_RELEASED 4
 #define EVENT_RX_COMPLETE 5
 #define EVENT_QUERRY 6
-#define EVENT_NEW_DEVICE 7
+#define EVENT_SLAVE_FOUND 7
 #define EVENT_TIMEOUT 8
 
 #define ERROR_RESET 0
@@ -110,7 +110,7 @@ void Error_Handler(void);
 #define FUNC_WRITE 0xF1
 #define FUNC_READ 0xF2
 #define FUNC_RESEND 0xF3
-#define FUNC_ASSIGN_ADDR 0xF4
+#define FUNC_FIND_SLAVE 0xF4
 
 #define CHECKSUM_ERROR 0
 #define CHECKSUM_NO_ERROR 1
