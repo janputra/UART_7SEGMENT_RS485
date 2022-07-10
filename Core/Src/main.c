@@ -45,8 +45,12 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+uint8_t f_lcd_item =0;
+
 uint8_t f_busy;
+uint8_t f_querry=0;
 uint8_t f_read_msg;
+uint8_t tx_timeout = 0;
 unsigned char f_timer_TX = 0;
 unsigned char f_seg_timer_500ms;
 unsigned char f_timer_10ms = 0;
@@ -73,31 +77,33 @@ unsigned char num_slave=0;
 unsigned char digit1, digit2;
 // flag for LCD
 unsigned char is_EN = 0;
-unsigned char lcd_digit1_f = 0;
+
 unsigned char digit1_update = 0;
 unsigned char digit2_update = 0;
 unsigned char cmd, data;
 unsigned char lcd_process = 0;
 
-unsigned char digit_table[17] = {"0123456789abcdef-"};
+char digit_table[17] = {"0123456789abcdef-"};
 
 uint8_t rx_temp;
-uint8_t transmission_f;
-buffer_tx_msg tx_buffer;
+
+circular_buffer digit1_buf;
+circular_buffer digit2_buf;
 circular_buffer rx_buffer;
 circular_buffer event_buffer;
-tx_msg rx_msg;
 uint8_t ID;
+uint8_t ID_list[10];
 uint8_t TX_msg[6];
 uint8_t RX_msg[4];
 uint8_t *pRX_msg;
+uint8_t *pTX_msg;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 void RS485_RX_Task(void);
-uint8_t checksum(uint8_t* buffer, uint8_t num_data);
+void RS485_TX_Task(void);
 void task_timer(void);
 void counting_task(void);
 void uart_TX2_task(void);
@@ -117,7 +123,7 @@ void Set_Transmitter_Port1(void);
 void Set_Transmitter_Port2(void);
 void Set_Receiver_Port1(void);
 void Set_Receiver_Port2(void);
-void RS485_Send_Message(tx_msg _tx_msg);
+void RS485_Send_Message(void);
 void RS485_Read_Message(void);
 /*
 unsigned char m_send_to_lcd(char data);
@@ -175,21 +181,32 @@ int main(void)
 
 	digit1 = 16;
 	digit2 = 16;
-	num_slave=0;
+	num_slave=2;
+	ID=0;
+	ID_list[0]= 0x10;
+	ID_list[1]= 0x12;
+	state = STATE_TX;
+	/*
 	if (num_slave>0){
 		state = STATE_OPERATION;
 	}else{
 		state=STATE_ASSIGNED_ADDR;
-	}
+	}*/
 
 	lcd_init();
 	lcd_clear();
-	lcd_set_pos(0, 3);
-	lcd_write_string("TETRADYNE");
+	lcd_set_pos(0, 0);
+	lcd_write_string("NUM SLAVE: ");
+	lcd_set_pos(0, 0xC);
+	lcd_data(digit_table[num_slave]);
 	lcd_set_pos(1, 0);
 	lcd_write_string("S2:");
+	lcd_set_pos(1, 0x3);
+	lcd_data(digit_table[digit2]);
 	lcd_set_pos(1, 0xC);
 	lcd_write_string("S1:");
+	lcd_set_pos(1, 0xF);
+	lcd_data(digit_table[digit1]);
 	/* USER CODE END 2 */
 
 	/* Infinite loop */
@@ -205,7 +222,6 @@ int main(void)
 		lcd_display_task();
 		key_read_task();
 		RS485_RX_Task();
-		RS485_TX_Task();
 		main_task();
 	}
 	/* USER CODE END 3 */
@@ -260,18 +276,19 @@ void SystemClock_Config(void)
 void lcd_display_task(void)
 {
 
-	if (!lcd_digit1_f)
-	{
-
+	if (f_lcd_item==0){
 		cmd = 0xC3;
 		data = digit_table[digit2];
-	}
-	else
-	{
-
+	}else if(f_lcd_item==1){
 		cmd = 0xCF;
 		data = digit_table[digit1];
+
+	}else if(f_lcd_item==2){
+		cmd =0x8C;
+		data = digit_table[num_slave];
+
 	}
+	
 	switch (lcd_process)
 	{
 
@@ -318,7 +335,8 @@ void m_send_to_lcd(char data)
 		if (lcd_process > 3)
 		{
 			lcd_process = 0;
-			lcd_digit1_f = (~lcd_digit1_f) & 0x1;
+			//lcd_digit1_f = (~lcd_digit1_f) & 0x1;
+			f_lcd_item = (f_lcd_item+1) == 3? 0:f_lcd_item+1;
 		}
 	}
 }
@@ -345,36 +363,20 @@ void task_timer(void)
 		f_timer_20ms = 1;
 	}
 	d_timer_50ms++;
-	if (d_timer_50ms == 10)
+	if (d_timer_50ms == 20)
 	{
 
 		d_timer_50ms = 0;
 		// f_timer_50ms=1;
-		buffer_push(&event_buffer, EVENT_QUERRY);
+		//buffer_push(&event_buffer, EVENT_QUERRY);
+		f_querry=1;
 	}
-	/*
-		d_timer_TX1++;
-			if(d_timer_TX1>=TX1_delay_val)     // checking if the count reached LED interval
-			{
-				d_timer_TX1=0;		// assign "0" to repeat counting
-				buffer_push(&event_buffer,EVENT_TX1_UPDATE);
 
-			}
-
-		d_timer_TX2++;
-			if(d_timer_TX2>=TX2_delay_val)     // checking if the count reached LED interval
-			{
-				d_timer_TX2=0;		// assign "0" to repeat counting
-				buffer_push(&event_buffer,EVENT_TX2_UPDATE);
-
-			}
-	*/
 }
 
 void key_read_task(void)
 {
-	if (!f_timer_30ms)
-		return;		  // Checking if 30 ms counting is done
+	if (!f_timer_30ms) return;		  // Checking if 30 ms counting is done
 	f_timer_30ms = 0; // clear the flag to wait next counting
 
 	uint8_t key_pindata = (uint8_t)(GPIOG->IDR & (KEY1_Pin | KEY2_Pin));
@@ -389,21 +391,20 @@ void key_read_task(void)
 
 	if (key1_data == KEY_PRESSED) // Checking if KEY1 is pressed
 	{
+		digit1=(digit1+1)>9? 0 :digit1+1;
+		buffer_push(&digit1_buf,digit1);
+		
 		buffer_push(&event_buffer, EVENT_KEY1_PRESSED); // Store the event in buffer
-	}
-	else if (key1_data == KEY_RELEASED) //  Checking if KEY1 is released
-	{
-		buffer_push(&event_buffer, EVENT_KEY1_RELEASED); // Store the event in buffer
 	}
 
 	if (key2_data == KEY_PRESSED) // Checking if KEY2 is pressed
 	{
+		digit2=(digit2+1)>15? 0 :digit2+1;
+		buffer_push(&digit2_buf,digit2);
+		
 		buffer_push(&event_buffer, EVENT_KEY2_PRESSED); // Store the event in buffer
 	}
-	else if (key2_data == KEY_RELEASED) //  Checking if KEY2 is released
-	{
-		buffer_push(&event_buffer, EVENT_KEY2_RELEASED); // Store the event in buffer
-	}
+
 }
 
 void main_task(void)
@@ -418,100 +419,90 @@ void main_task(void)
 
 	switch (state)
 	{
-	case STATE_ASSIGNED_ADDR:
+	case STATE_TX:
+
+		if (num_slave==0) break;
+
+		switch (event)
+		{
+		case EVENT_KEY1_PRESSED:
+			
+			pTX_msg = &TX_msg[1];
+			
+			*pTX_msg++ = ID_list[0];
+			*pTX_msg++ = FUNC_WRITE;
+			*pTX_msg++ = buffer_pop(&digit1_buf)+'0';
+			 			
+			RS485_Send_Message();
+			event = EVENT_RESET;
+			state = STATE_WAITING_RX;
+			f_querry =0;
+			break;
+
+		case EVENT_KEY2_PRESSED:
+			
+			
+			pTX_msg = &TX_msg[1];
+			
+			*pTX_msg++ = ID_list[1];
+			*pTX_msg++ = FUNC_WRITE;
+			*pTX_msg++ = buffer_pop(&digit2_buf)+'0';
+					
+			RS485_Send_Message();
+			event = EVENT_RESET;
+			state = STATE_WAITING_RX;
+			f_querry =0;
+			break;
+		
+		
+		default:
+			if (!f_querry) break;
+			f_querry =0;
+			
+			pTX_msg = &TX_msg[1];
+			
+			*pTX_msg++ = ID_list[ID];
+			ID = (ID+1) == num_slave? 0:ID+1;
+
+			//digit2=(digit2+1)>15? 0 :digit2+1;
+			*pTX_msg++ = FUNC_READ;
+			*pTX_msg++ = '0';
+			
+			RS485_Send_Message();
+			state = STATE_WAITING_RX;
+			break;
+
+		}
+		break;
+		
+	case STATE_WAITING_RX:
+		
+		if (event==EVENT_RX_COMPLETE){
+			RS485_Read_Message();
+
+			state=STATE_TX;
+			event = EVENT_RESET;
+
+		}else{
+			
+			if (!f_querry) break;
+			f_querry =0;
+			tx_timeout++;
+			
+			if (tx_timeout==2){
+				state = STATE_TX;
+				tx_timeout=0;
+
+				num_slave--;
+				
+
+			}
+			RS485_Send_Message();
+		}
 		
 		break;
-	
-	default:
-		break;
-	}
-	/*
-	switch(state)
-	{
-		case STATE_ASSIGNED_ADDR:
-			switch (event)
-				{
-				case EVENT_QUERRY:
-					
-					
-					RS485_Send_Message(ADDR, FUNC_READ, 0x00);
-					
-					event = EVENT_RESET;
-					break;
-
-				case EVENT_RX_COMPLETE:
-
-					RS485_Read_Message();
-					
-					event = EVENT_RESET;
-					break;
-
-				case EVENT_NEW_DEVICE:
-					state = STATE_OPERATION;
-					num_slave++;
-					RS485_Send_Message(0x10, FUNC_ASSIGN_ADDR, ADDR|num_slave);
-					event = EVENT_RESET;
-					break;
-				}
-		break;
-
-		case STATE_OPERATION:
-			switch (event)
-			{
-			case EVENT_KEY1_PRESSED:
-				digit1++;
-
-				if (digit1 > 9)
-				{
-					digit1 = 0;
-				}
-
-				RS485_Send_Message((ADDR|1), FUNC_WRITE, (digit1 + '0'));
-				event = EVENT_RESET;
-				break;
-
-			case EVENT_KEY2_PRESSED:
-				digit2++;
-				if (digit2 > 9)
-				{
-					digit2 = 0;
-				}
-				RS485_Send_Message((ADDR|2), FUNC_WRITE, (digit2 + '0'));
-
-				event = EVENT_RESET;
-
-				break;
-			case EVENT_RX_COMPLETE:
-
-				RS485_Read_Message();
-				
-				event = EVENT_RESET;
-				break;
-
-			case EVENT_QUERRY:
-				
-				
-
-				for (int i =0; i <num_slave+1;i++){
-					if (n_querry==i) {
-					RS485_Send_Message((ADDR|i), FUNC_READ, 0x00);
-					
-					break;	
-					}
-				}
-				n_querry++;
-				if (n_querry==num_slave+1){
-					n_querry=0;
-				}	
-						
-				event = EVENT_RESET;
-				break;
-			}
-		break;
 
 	}
-
-	*/
 
 
 }
@@ -530,8 +521,8 @@ void RS485_RX_Task(void)
 	}else if(rx_buffer.data[rx_buffer.tail]==EOF)
 	{
 		f_read_msg =0;
-
-		//RS485_Read_Message();  event msg ready 
+    	buffer_push(&event_buffer,EVENT_RX_COMPLETE);
+		//RS485_Read_Message();  //event msg ready 
 	}else{
 
 		if (f_read_msg){
@@ -543,65 +534,51 @@ void RS485_RX_Task(void)
 }
 
 
-void RS485_TX_Task(void)
-{
-	
-	if (tx_buffer.tail==tx_buffer.head) return;
-
-	// if ()	
-	RS485_Send_Message(tx_buffer.buffer[tx_buffer.tail]);
-
-	tx_buffer.tail = (tx_buffer.tail+1)%BUFFER_SIZE;
-
-	
-}
 
 void RS485_Read_Message(void)
 {
+	//digit2 = 10;
 	uint8_t * digit;
+	uint8_t checksum = 0;
 
-	if (checksum(RX_msg,3)== RX_msg[3])
+	checksum = checksum^RX_msg[0]^RX_msg[1]^RX_msg[2];
+	if (!(checksum== RX_msg[3]))
 	{
-
-
-	}
-
-	if (RX_msg[0] == (ADDR|1))
-	{
-		 digit = &digit1;
-	}
-	else if (RX_msg[0] == (ADDR|2))
-	{
-		 digit = &digit2;
-	}else if(RX_msg[0] == ADDR){
-		 buffer_push(&event_buffer, EVENT_NEW_DEVICE);
-		 state = STATE_ASSIGNED_ADDR;	
 		return;
+
+	}
+	
+
+	if ((RX_msg[0] == 0x10))
+	{
+		digit =&digit1;
+
+	}else if ((RX_msg[0] == 0x12))
+	{
+		digit =&digit2;
 	}else{
 		return;
 	}
+	
 
 	if (RX_msg[1] == FUNC_READ)
-	{
+	{	
 		*digit = (RX_msg[2] - '0');
+		
 	}
-	else if (RX_msg[1] == FUNC_RESEND)
+	else if (RX_msg[1] == FUNC_WRITE)
 	{
-		//RS485_Send_Message(TX_msg[0], TX_msg[1], TX_msg[2]);
+		
 	}
 }
 
 
 
-void RS485_Send_Message(tx_msg _tx_msg)
+void RS485_Send_Message(void)
 {
 	
-
 	TX_msg[0] = SOF;
-	TX_msg[1] = _tx_msg.addr;
-	TX_msg[2] = _tx_msg.func_code;
-	TX_msg[3] = _tx_msg.data;
-	TX_msg[4] = (((0x00^_tx_msg.addr)^_tx_msg.func_code)^_tx_msg.data);    // checksum
+	TX_msg[4] = (((0x00^TX_msg[1])^TX_msg[2])^TX_msg[3]);    // checksum
 	TX_msg[5] = EOF;
 
 	// uint8_t *pbuf_tx = (uint8_t *)&msg;

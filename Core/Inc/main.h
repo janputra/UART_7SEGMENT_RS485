@@ -90,6 +90,7 @@ void Error_Handler(void);
 #define EVENT_RX_COMPLETE 5
 #define EVENT_QUERRY 6
 #define EVENT_NEW_DEVICE 7
+#define EVENT_TIMEOUT 8
 
 #define ERROR_RESET 0
 #define ERROR_CHECKSUM 1
@@ -98,17 +99,18 @@ void Error_Handler(void);
 #define KEY_PRESSED 0b1100     //
 #define KEY_RELEASED 0b0011
 
-#define STATE_ASSIGNED_ADDR 0
-#define STATE_OPERATION 1
+#define STATE_WAITING_SLAVE 0
+#define STATE_TX 1
+#define STATE_WAITING_RX 2
 
 #define ADDR 0x10
 
 
 
-#define FUNC_WRITE 1
-#define FUNC_READ 2
-#define FUNC_RESEND 3
-#define FUNC_ASSIGN_ADDR 4
+#define FUNC_WRITE 0xF1
+#define FUNC_READ 0xF2
+#define FUNC_RESEND 0xF3
+#define FUNC_ASSIGN_ADDR 0xF4
 
 #define CHECKSUM_ERROR 0
 #define CHECKSUM_NO_ERROR 1
