@@ -45,6 +45,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+#define RAND __TIME__
 uint8_t f_lcd_item =0;
 
 uint8_t f_busy;
@@ -73,20 +74,22 @@ unsigned char TX2_delay_val = 250;
 unsigned char key1_data, key2_data;
 unsigned char state, event, error;
 unsigned char num_slave=0;
+uint8_t key1_ID,key2_ID;
 
 unsigned char digit1, digit2;
+uint8_t old_num_slave, old_digit1,old_digit2;
 // flag for LCD
 unsigned char is_EN = 0;
 
 unsigned char digit1_update = 0;
 unsigned char digit2_update = 0;
 unsigned char cmd, data;
-unsigned char lcd_process = 0;
+unsigned char lcd_process = 4;
 
 char digit_table[17] = {"0123456789abcdef-"};
 
 uint8_t rx_temp;
-
+uint8_t x=1;
 circular_buffer digit1_buf;
 circular_buffer digit2_buf;
 circular_buffer rx_buffer;
@@ -97,6 +100,8 @@ uint8_t TX_msg[6];
 uint8_t RX_msg[4];
 uint8_t *pRX_msg;
 uint8_t *pTX_msg;
+uint8_t temp;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -125,6 +130,8 @@ void Set_Receiver_Port1(void);
 void Set_Receiver_Port2(void);
 void RS485_Send_Message(void);
 void RS485_Read_Message(void);
+void check_slave(void);
+void update_lcd(uint8_t* itm);
 /*
 unsigned char m_send_to_lcd(char data);
 unsigned char m_lcd_cmd(char cmd);
@@ -181,11 +188,12 @@ int main(void)
 
 	digit1 = 16;
 	digit2 = 16;
-	num_slave=2;
+	num_slave=0;
 	ID=0;
 	ID_list[0]= 0xFF;
-	ID_list[1]= 0x12;
-	ID_list[2]= 0x12;
+	ID_list[1]= 0;
+	ID_list[2]= 0;
+	//ID_list[2]= 0x12;
 	state = STATE_TX;
 	/*
 	if (num_slave>0){
@@ -193,7 +201,7 @@ int main(void)
 	}else{
 		state=STATE_ASSIGNED_ADDR;
 	}*/
-
+	HAL_Delay(1000);
 	lcd_init();
 	lcd_clear();
 	lcd_set_pos(0, 0);
@@ -208,6 +216,9 @@ int main(void)
 	lcd_write_string("S1:");
 	lcd_set_pos(1, 0xF);
 	lcd_data(digit_table[digit1]);
+	old_digit1 = digit1;
+	old_digit2=old_digit2;
+	old_num_slave= num_slave;
 	/* USER CODE END 2 */
 
 	/* Infinite loop */
@@ -274,22 +285,49 @@ void SystemClock_Config(void)
 
 /* USER CODE BEGIN 4 */
 
-void lcd_display_task(void)
-{
+void update_lcd(uint8_t* itm){
 
-	if (f_lcd_item==0){
+	if (lcd_process<4)return;
+	if (itm == &digit2){
 		cmd = 0xC3;
 		data = digit_table[digit2];
-	}else if(f_lcd_item==1){
+		lcd_process = 0;
+	}else if(itm ==&digit1){
 		cmd = 0xCF;
 		data = digit_table[digit1];
-
-	}else if(f_lcd_item==2){
+		lcd_process = 0;
+	}else if(itm ==&num_slave){
 		cmd =0x8C;
 		data = digit_table[num_slave];
-
+		lcd_process = 0;
 	}
+
+}
+
+
+void lcd_display_task(void)
+{
+	/*
+	if (digit2!=old_digit2){
+		cmd = 0xC3;
+		data = digit_table[digit2];
+		old_digit2=digit2;
+		lcd_process = 0;
+	}else if(digit1!=old_digit1){
+		cmd = 0xCF;
+		data = digit_table[digit1];
+		old_digit1 = digit1;
+		lcd_process = 0;
+	}else if(old_num_slave!=num_slave){
+		cmd =0x8C;
+		data = digit_table[num_slave];
+		old_num_slave = num_slave;
+		lcd_process = 0;
+	}
+	*/
 	
+	if(lcd_process>3) return;
+
 	switch (lcd_process)
 	{
 
@@ -333,12 +371,7 @@ void m_send_to_lcd(char data)
 		HAL_GPIO_WritePin(EN_GPIO_Port, EN_Pin, 0);
 		is_EN = 0;
 		lcd_process++;
-		if (lcd_process > 3)
-		{
-			lcd_process = 0;
-			//lcd_digit1_f = (~lcd_digit1_f) & 0x1;
-			f_lcd_item = (f_lcd_item+1) == 3? 0:f_lcd_item+1;
-		}
+	
 	}
 }
 
@@ -364,7 +397,7 @@ void task_timer(void)
 		f_timer_20ms = 1;
 	}
 	d_timer_50ms++;
-	if (d_timer_50ms == 20)
+	if (d_timer_50ms == 5)
 	{
 
 		d_timer_50ms = 0;
@@ -393,16 +426,21 @@ void key_read_task(void)
 	if (key1_data == KEY_PRESSED) // Checking if KEY1 is pressed
 	{
 		digit1=(digit1+1)>9? 0 :digit1+1;
+		update_lcd(&digit1);
+		old_digit1 = digit1;
 		buffer_push(&digit1_buf,digit1);
 		
+		state = STATE_TX;
 		buffer_push(&event_buffer, EVENT_KEY1_PRESSED); // Store the event in buffer
 	}
 
 	if (key2_data == KEY_PRESSED) // Checking if KEY2 is pressed
 	{
 		digit2=(digit2+1)>15? 0 :digit2+1;
+		update_lcd(&digit2);
+		old_digit2 =digit2;
 		buffer_push(&digit2_buf,digit2);
-		
+		state = STATE_TX;
 		buffer_push(&event_buffer, EVENT_KEY2_PRESSED); // Store the event in buffer
 	}
 
@@ -422,15 +460,14 @@ void main_task(void)
 	{
 	case STATE_TX:
 
-		if (num_slave==0) break;
-
 		switch (event)
 		{
 		case EVENT_KEY1_PRESSED:
 			
+			//if(key1_ID==0)break;
 			pTX_msg = &TX_msg[1];
 			
-			*pTX_msg++ = ID_list[0];
+			*pTX_msg++ = ID_list[1];
 			*pTX_msg++ = FUNC_WRITE;
 			*pTX_msg++ = buffer_pop(&digit1_buf)+'0';
 			 			
@@ -442,10 +479,10 @@ void main_task(void)
 
 		case EVENT_KEY2_PRESSED:
 			
-			
+		//	if(key2_ID==0)break;
 			pTX_msg = &TX_msg[1];
 			
-			*pTX_msg++ = ID_list[1];
+			*pTX_msg++ = ID_list[2];
 			*pTX_msg++ = FUNC_WRITE;
 			*pTX_msg++ = buffer_pop(&digit2_buf)+'0';
 					
@@ -464,18 +501,20 @@ void main_task(void)
 			
 			*pTX_msg++ = ID_list[ID];
 			
-			if(ID==0){
-				*pTX_msg++ = FUNC_FIND_SLAVE;
+			if(ID>0){
+				*pTX_msg++ = FUNC_READ;
 				*pTX_msg++ = '0';
 			}else{
 			//digit2=(digit2+1)>15? 0 :digit2+1;
-				*pTX_msg++ = FUNC_READ;
+				
+				*pTX_msg++ = FUNC_FIND_SLAVE;
 				*pTX_msg++ = '0';
 			}
-
-			ID = (ID+1) == num_slave+1? 0:ID+1;
-
+			
 			RS485_Send_Message();
+			
+			ID = (ID+1)== 3 ?0:ID+1;
+			
 			state = STATE_WAITING_RX;
 			break;
 
@@ -489,22 +528,29 @@ void main_task(void)
 
 			state=STATE_TX;
 			event = EVENT_RESET;
+		
 
 		}else{
 			
 			if (!f_querry) break;
 			f_querry =0;
+			
+			/*if((TX_msg[2]==FUNC_FIND_SLAVE)){
+				state = STATE_TX;
+				break;
+			}*/
+			RS485_Send_Message();
 			tx_timeout++;
 			
 			if (tx_timeout==2){
 				state = STATE_TX;
+				event = EVENT_RESET;	
 				tx_timeout=0;
-
-				num_slave--;
-				
+				check_slave();
+				break;
 
 			}
-			RS485_Send_Message();
+			
 		}
 		
 		break;
@@ -513,6 +559,36 @@ void main_task(void)
 
 
 }
+
+void check_slave(void){
+
+	if ((TX_msg[1]==ID_list[0])||(TX_msg[1]==0))return;
+	
+	for (int i=1; i<3;i++){
+
+		if (TX_msg[1]==ID_list[i]){
+			
+			/*	
+			if (ID_list[i]==key1_ID){
+				key1_ID=0;
+			}else if(ID_list[i]==key2_ID)
+			{
+				key2_ID=0;
+			}
+
+			if(i==1){
+				ID_list[1]=ID_list[2];
+			}
+*/			//ID_list[i]=0;
+			//num_slave--;
+			//update_lcd(&num_slave);
+			return;
+		}
+	}	
+}
+
+
+
 
 void RS485_RX_Task(void)
 {
@@ -540,8 +616,6 @@ void RS485_RX_Task(void)
 
 }
 
-
-
 void RS485_Read_Message(void)
 {
 	//digit2 = 10;
@@ -554,13 +628,17 @@ void RS485_Read_Message(void)
 		return;
 
 	}
-	
 
-	if ((RX_msg[0] == 0x10))
+	if ((RX_msg[0] == ID_list[1]))
 	{
 		if (RX_msg[1] == FUNC_READ)
 		{	
 			digit1 = (RX_msg[2] - '0');
+			
+			if (digit1!= old_digit1){
+				update_lcd(&digit1);
+				old_digit1 = digit1;
+			}
 			
 		}
 		else if (RX_msg[1] == FUNC_WRITE)
@@ -568,21 +646,38 @@ void RS485_Read_Message(void)
 			
 		}
 
-	}else if ((RX_msg[0] == 0x12))
+	}else if ((RX_msg[0] == ID_list[2]))
 	{
 		if (RX_msg[1] == FUNC_READ)
 		{	
 			digit2 = (RX_msg[2] - '0');
+			
+			if(digit2!= old_digit2)
+			{
+				update_lcd(&digit2);
+				old_digit2 =digit2;
+			}
 			
 		}
 		else if (RX_msg[1] == FUNC_WRITE)
 		{
 			
 	}
-	}else if(RX_msg[0]==0xFF){
+	}else if(RX_msg[0]==ID_list[0]){
 
 		if (RX_msg[1]== FUNC_FIND_SLAVE){
 
+				num_slave++;
+				
+				update_lcd(&num_slave);
+				ID_list[num_slave]= RX_msg[2];
+					/*if(ID_list[1]==0){
+						ID_list[1]=RX_msg[2];
+
+					}else if (ID_list[2]==0){
+					ID_list[2]= RX_msg[2];
+					}*/
+			
 		}
 		//buffer_push(&event_buffer,EVENT_SLAVE_FOUND);
 	
