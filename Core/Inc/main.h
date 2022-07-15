@@ -117,7 +117,8 @@ void Error_Handler(void);
 
 #define SOF 0x2
 #define EOF 0x3
-
+#define SLAVE1 1
+#define SLAVE2 2
 
 
 
