@@ -22,3 +22,5 @@ build/stm32f4xx_it.lst
 build/system_stm32f4xx.lst
 build/tim.lst
 build/usart.lst
+.vscode/dryrun.log
+.vscode/targets.log
