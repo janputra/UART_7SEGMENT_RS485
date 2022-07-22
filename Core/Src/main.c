@@ -541,7 +541,7 @@ void main_task(void)
 
 void check_slave(void){
 
-	if ((TX_msg[1]==ID_list[0])||(TX_msg[1]==0))return;
+	if ((TX_msg[1]==ID_list[0])||(TX_msg[1]==0)||(TX_msg[2]==FUNC_WRITE))return;
 	
 	if (TX_msg[1]==ID_list[SLAVE1]){
 		display_disconnected_slave(SLAVE1);
