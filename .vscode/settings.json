@@ -1,6 +1,10 @@
 {
     "makefile.extensionOutputFolder": "./.vscode",
     "files.associations": {
-        "lcd16x2.h": "c"
+        "lcd16x2.h": "c",
+        "buffer.h": "c",
+        "main.h": "c",
+        "stm32f4xx_hal.h": "c",
+        "stm32f4xx_hal_conf.h": "c"
     }
 }
