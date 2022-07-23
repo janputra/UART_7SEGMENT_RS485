@@ -78,3 +78,6 @@ build/UART_7SEGMENT_RS485.hex
 build/UART_7SEGMENT_RS485.map
 build/usart.lst
 build/usart.o
+.vscode/configurationCache.log
+.gitignore
+.vscode/targets.log
