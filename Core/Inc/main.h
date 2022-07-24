@@ -99,12 +99,13 @@ void Error_Handler(void);
 #define KEY_PRESSED 0b1100     //
 #define KEY_RELEASED 0b0011
 
-#define STATE_WAITING_SLAVE 0
+#define STATE_IDLE 0
 #define STATE_TX 1
 #define STATE_WAITING_RX 2
 
 #define ADDR 0x10
-
+#define DISCONNECTED 0
+#define CONNECTED 1
 
 
 #define FUNC_WRITE 0xF1
