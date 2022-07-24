@@ -398,7 +398,8 @@ void main_task(void)
 			//d_timer_update_digit = 250;			
 			event = EVENT_RESET;
 			state = STATE_TX;
-			
+			f_querry =0;
+			//state = STATE_IDLE;
 			break;
 
 		case EVENT_KEY2_PRESSED:
@@ -408,7 +409,8 @@ void main_task(void)
 			//d_timer_update_digit = 250;	
 			event = EVENT_RESET;
 			state = STATE_TX;
-			
+			f_querry =0;
+			//state = STATE_IDLE;
 			break;
 				
 		default:
@@ -419,7 +421,9 @@ void main_task(void)
 				
 				RS485_Send_Message(ID_list[ID],FUNC_READ, '0');
 			}else{
-				RS485_Send_Message(ID_list[ID],FUNC_FIND_SLAVE,'0');
+				//if (num_slave<2){
+					RS485_Send_Message(ID_list[ID],FUNC_FIND_SLAVE,((num_slave+1)+'0'));
+				//}
 			}
 						
 			ID = (ID+1)== 3 ?0:ID+1;
@@ -462,7 +466,7 @@ void main_task(void)
 			}
 			else if (f_TX_ID == SLAVE2)
 			{
-				digit2=(digit2+1)>9? 0 :digit2+1;
+				digit2=(digit2+1)>15? 10 :digit2+1;
 				update_lcd(&digit2);
 				old_digit2 = digit2;
 				//buffer_push(&digit1_buf,digit1);
@@ -496,11 +500,11 @@ void main_task(void)
 			RS485_Send_Message(TX_msg[1],TX_msg[2],TX_msg[3]);
 			tx_timeout++;
 			
-			if (tx_timeout==2){
+			if (tx_timeout==10){
 				state = old_state;
 				event = EVENT_RESET;	
 				tx_timeout=0;
-				//check_slave();
+				check_slave();
 				break;
 
 			}
